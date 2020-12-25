@@ -42,6 +42,16 @@ pub struct Settings<'a> {
     pub check_machine_id: Option<&'a dyn Fn(u16) -> bool>,
 }
 
+impl<'a> Settings<'a> {
+    pub fn empty() -> Self {
+        Self {
+            start_time: None,
+            machine_id: None,
+            check_machine_id: None,
+        }
+    }
+}
+
 /// Sonyflake is a distributed unique ID generator.
 pub struct Sonyflake {
     start_time: i64,
@@ -198,8 +208,11 @@ pub fn decompose(id: u64) -> HashMap<String, u64> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn next_id() {
+        let mut sf = Sonyflake::new(Settings::empty()).expect("Could not construct Sonyflake");
+        assert!(sf.next_id().is_ok());
     }
 }
