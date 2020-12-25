@@ -1,6 +1,7 @@
 use chrono::prelude::*;
 use pnet::datalink;
 use std::{
+    collections::HashMap,
     net::{IpAddr, Ipv4Addr},
     thread,
     time::Duration,
@@ -177,6 +178,22 @@ fn lower_16_bit_private_ip() -> Result<u16, Error> {
         }
         None => Err(Error::NoPrivateIPv4),
     }
+}
+
+/// Break a Sonyflake ID up into its parts.
+pub fn decompose(id: u64) -> HashMap<String, u64> {
+    let mut map = HashMap::new();
+
+    let mask_sequence = (1 << BIT_LEN_SEQUENCE - 1) << BIT_LEN_MACHINE_ID;
+    let mask_machine_id = 1 << BIT_LEN_MACHINE_ID - 1;
+
+    map.insert("id".into(), id);
+    map.insert("msb".into(), id >> 63);
+    map.insert("time".into(), id >> (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID));
+    map.insert("sequence".into(), id & mask_sequence >> BIT_LEN_MACHINE_ID);
+    map.insert("machine-id".into(), id & mask_machine_id);
+
+    map
 }
 
 #[cfg(test)]
