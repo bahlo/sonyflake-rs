@@ -119,19 +119,23 @@ impl Sonyflake {
     }
 }
 
-fn to_sonyflake_time(time: DateTime<Utc>) -> i64 {
-    unimplemented!()
-}
+/// nanoseconds, i.e. 10msec
+const SONYFLAKE_TIME_UNIT: i64 = 10_000_000;
 
-fn lower_16_bit_private_ip() -> u16 {
-    unimplemented!()
+fn to_sonyflake_time(time: DateTime<Utc>) -> i64 {
+    time.timestamp_nanos() / SONYFLAKE_TIME_UNIT
 }
 
 fn current_elapsed_time(start_time: i64) -> i64 {
-    unimplemented!()
+    to_sonyflake_time(Utc::now()) - start_time
 }
 
 fn sleep_time(overtime: i64) -> Duration {
+    Duration::from_millis(overtime as u64 * 10)
+        - Duration::from_nanos((Utc::now().timestamp_nanos() % SONYFLAKE_TIME_UNIT) as u64)
+}
+
+fn lower_16_bit_private_ip() -> u16 {
     unimplemented!()
 }
 
