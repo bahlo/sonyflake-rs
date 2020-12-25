@@ -1,5 +1,10 @@
 use chrono::prelude::*;
-use std::{thread, time::Duration};
+use pnet::datalink;
+use std::{
+    net::{IpAddr, Ipv4Addr},
+    thread,
+    time::Duration,
+};
 use thiserror::Error;
 
 /// bit length of time
@@ -19,6 +24,8 @@ pub enum Error {
     CheckMachineIdFailed,
     #[error("over the time limit")]
     OverTimeLimit,
+    #[error("could not find any private ipv4 address")]
+    NoPrivateIPv4,
 }
 
 /// Settings configures Sonyflake:
@@ -67,7 +74,7 @@ impl Sonyflake {
                 Err(e) => return Err(Error::MachineIdFailed(e)),
             }
         } else {
-            lower_16_bit_private_ip()
+            lower_16_bit_private_ip()?
         };
 
         if let Some(check_machine_id) = settings.check_machine_id {
@@ -135,8 +142,41 @@ fn sleep_time(overtime: i64) -> Duration {
         - Duration::from_nanos((Utc::now().timestamp_nanos() % SONYFLAKE_TIME_UNIT) as u64)
 }
 
-fn lower_16_bit_private_ip() -> u16 {
-    unimplemented!()
+fn private_ipv4() -> Option<Ipv4Addr> {
+    datalink::interfaces()
+        .iter()
+        .find(|interface| interface.is_up() && !interface.is_loopback())
+        .and_then(|interface| {
+            interface
+                .ips
+                .iter()
+                .map(|ip_addr| ip_addr.ip()) // convert to std
+                .find(|ip_addr| match ip_addr {
+                    IpAddr::V4(ipv4) => is_private_ipv4(*ipv4),
+                    IpAddr::V6(_) => false,
+                })
+                .and_then(|ip_addr| match ip_addr {
+                    IpAddr::V4(ipv4) => Some(ipv4), // make sure the return type is Ipv4Addr
+                    _ => None,
+                })
+        })
+}
+
+fn is_private_ipv4(ip: Ipv4Addr) -> bool {
+    let octets = ip.octets();
+    octets[0] == 10
+        || octets[0] == 172 && (octets[1] >= 16 && octets[1] < 32)
+        || octets[0] == 192 && octets[1] == 168
+}
+
+fn lower_16_bit_private_ip() -> Result<u16, Error> {
+    match private_ipv4() {
+        Some(ip) => {
+            let octets = ip.octets();
+            Ok((octets[2] << 8 + octets[3]).into())
+        }
+        None => Err(Error::NoPrivateIPv4),
+    }
 }
 
 #[cfg(test)]
