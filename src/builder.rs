@@ -7,20 +7,20 @@ use crate::sonyflake::{to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE};
 
 /// A builder to build a [`Sonyflake`] generator.
 ///
-/// [`Sonyflake`]: #struct.Sonyflake.html
-pub struct SonyflakeBuilder<'a> {
+/// [`Sonyflake`]: ../sonyflake/struct.Sonyflake.html
+pub struct Builder<'a> {
     start_time: Option<DateTime<Utc>>,
     machine_id: Option<&'a dyn Fn() -> Result<u16, Box<dyn std::error::Error>>>,
     check_machine_id: Option<&'a dyn Fn(u16) -> bool>,
 }
 
-impl<'a> Default for SonyflakeBuilder<'a> {
+impl<'a> Default for Builder<'a> {
     fn default() -> Self {
-        SonyflakeBuilder::new()
+        Builder::new()
     }
 }
 
-impl<'a> SonyflakeBuilder<'a> {
+impl<'a> Builder<'a> {
     /// Construct a new builder to call methods on for the [`Sonyflake`] construction.
     ///
     /// [`Sonyflake`]: #struct.Sonyflake.html
@@ -56,6 +56,7 @@ impl<'a> SonyflakeBuilder<'a> {
         self
     }
 
+    /// Finalize the builder to create a Sonyflake.
     pub fn finalize(self) -> Result<Sonyflake, Error> {
         let sequence = 1 << (BIT_LEN_SEQUENCE - 1);
 

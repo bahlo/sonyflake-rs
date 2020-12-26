@@ -1,5 +1,5 @@
 [package]
-name = "sonyflake-rs"
+name = "sonyflake"
 version = "0.1.0"
 authors = ["Arne Bahlo <hallo@arne.me>"]
 edition = "2018"
