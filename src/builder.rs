@@ -14,6 +14,12 @@ pub struct SonyflakeBuilder<'a> {
     check_machine_id: Option<&'a dyn Fn(u16) -> bool>,
 }
 
+impl<'a> Default for SonyflakeBuilder<'a> {
+    fn default() -> Self {
+        SonyflakeBuilder::new()
+    }
+}
+
 impl<'a> SonyflakeBuilder<'a> {
     /// Construct a new builder to call methods on for the [`Sonyflake`] construction.
     ///
@@ -51,7 +57,7 @@ impl<'a> SonyflakeBuilder<'a> {
     }
 
     pub fn finalize(self) -> Result<Sonyflake, Error> {
-        let sequence = 1 << BIT_LEN_SEQUENCE - 1;
+        let sequence = 1 << (BIT_LEN_SEQUENCE - 1);
 
         let start_time = if let Some(start_time) = self.start_time {
             if start_time > Utc::now() {
@@ -118,7 +124,7 @@ fn lower_16_bit_private_ip() -> Result<u16, Error> {
     match private_ipv4() {
         Some(ip) => {
             let octets = ip.octets();
-            Ok((((octets[2] as u16) << 8) + (octets[3] as u16)).into())
+            Ok(((octets[2] as u16) << 8) + (octets[3] as u16))
         }
         None => Err(Error::NoPrivateIPv4),
     }

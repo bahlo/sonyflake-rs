@@ -22,7 +22,7 @@ impl Sonyflake {
     /// Generate the next unique id.
     /// After the Sonyflake time overflows, next_id returns an error.
     pub fn next_id(&mut self) -> Result<u64, Error> {
-        let mask_sequence = 1 << BIT_LEN_SEQUENCE - 1;
+        let mask_sequence = 1 << (BIT_LEN_SEQUENCE - 1);
 
         let current = current_elapsed_time(self.start_time);
         if self.elapsed_time < current {
@@ -73,8 +73,8 @@ fn sleep_time(overtime: i64) -> Duration {
 pub fn decompose(id: u64) -> HashMap<String, u64> {
     let mut map = HashMap::new();
 
-    let mask_sequence = (1 << BIT_LEN_SEQUENCE - 1) << BIT_LEN_MACHINE_ID;
-    let mask_machine_id = 1 << BIT_LEN_MACHINE_ID - 1;
+    let mask_sequence = (1 << (BIT_LEN_SEQUENCE - 1)) << BIT_LEN_MACHINE_ID;
+    let mask_machine_id = 1 << (BIT_LEN_MACHINE_ID - 1);
 
     map.insert("id".into(), id);
     map.insert("msb".into(), id >> 63);
