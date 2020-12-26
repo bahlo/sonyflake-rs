@@ -184,7 +184,7 @@ fn lower_16_bit_private_ip() -> Result<u16, Error> {
     match private_ipv4() {
         Some(ip) => {
             let octets = ip.octets();
-            Ok((octets[2] << 8 + octets[3]).into())
+            Ok((((octets[2] as u16) << 8) + (octets[3] as u16)).into())
         }
         None => Err(Error::NoPrivateIPv4),
     }
