@@ -29,26 +29,85 @@ pub enum Error {
     NoPrivateIPv4,
 }
 
-/// Settings configures Sonyflake:
+/// A builder to build a [`Sonyflake`] generator.
 ///
-/// start_time is the time since which the Sonyflake time is defined as the elapsed time.
-/// If start_time is 0, the start time of the Sonyflake is set to "2014-09-01 00:00:00 +0000 UTC".
-/// machine_id returns the unique ID of the Sonyflake instance.
-/// Default machine_id returns the lower 16 bits of the private IP address.
-/// check_machine_id validates the uniqueness of the machine ID.
-pub struct Settings<'a> {
-    pub start_time: Option<DateTime<Utc>>,
-    pub machine_id: Option<&'a dyn Fn() -> Result<u16, Box<dyn std::error::Error>>>,
-    pub check_machine_id: Option<&'a dyn Fn(u16) -> bool>,
+/// [`Sonyflake`]: #struct.Sonyflake.html
+pub struct SonyflakeBuilder<'a> {
+    start_time: Option<DateTime<Utc>>,
+    machine_id: Option<&'a dyn Fn() -> Result<u16, Box<dyn std::error::Error>>>,
+    check_machine_id: Option<&'a dyn Fn(u16) -> bool>,
 }
 
-impl<'a> Settings<'a> {
-    pub fn empty() -> Self {
+impl<'a> SonyflakeBuilder<'a> {
+    /// Construct a new builder to call methods on for the [`Sonyflake`] construction.
+    ///
+    /// [`Sonyflake`]: #struct.Sonyflake.html
+    pub fn new() -> Self {
         Self {
             start_time: None,
             machine_id: None,
             check_machine_id: None,
         }
+    }
+
+    /// Sets the start time.
+    /// If the time is ahead of current time, finalize will fail.
+    pub fn start_time(mut self, start_time: DateTime<Utc>) -> Self {
+        self.start_time = Some(start_time);
+        self
+    }
+
+    /// Sets the machine id.
+    /// If the fn returns an error, finalize will fail.
+    pub fn machine_id(
+        mut self,
+        machine_id: &'a dyn Fn() -> Result<u16, Box<dyn std::error::Error>>,
+    ) -> Self {
+        self.machine_id = Some(machine_id);
+        self
+    }
+
+    /// Set a function to check the machine id.
+    /// If the fn returns false, finalize will fail.
+    pub fn check_machine_id(mut self, check_machine_id: &'a dyn Fn(u16) -> bool) -> Self {
+        self.check_machine_id = Some(check_machine_id);
+        self
+    }
+
+    pub fn finalize(self) -> Result<Sonyflake, Error> {
+        let sequence = 1 << BIT_LEN_SEQUENCE - 1;
+
+        let start_time = if let Some(start_time) = self.start_time {
+            if start_time > Utc::now() {
+                return Err(Error::StartTimeAheadOfCurrentTime(start_time));
+            }
+
+            to_sonyflake_time(start_time)
+        } else {
+            to_sonyflake_time(Utc.ymd(2014, 9, 1).and_hms(0, 0, 0))
+        };
+
+        let machine_id = if let Some(machine_id) = self.machine_id {
+            match machine_id() {
+                Ok(machine_id) => machine_id,
+                Err(e) => return Err(Error::MachineIdFailed(e)),
+            }
+        } else {
+            lower_16_bit_private_ip()?
+        };
+
+        if let Some(check_machine_id) = self.check_machine_id {
+            if !check_machine_id(machine_id) {
+                return Err(Error::CheckMachineIdFailed);
+            }
+        }
+
+        Ok(Sonyflake {
+            sequence,
+            start_time,
+            machine_id,
+            elapsed_time: 0,
+        })
     }
 }
 
@@ -61,47 +120,6 @@ pub struct Sonyflake {
 }
 
 impl Sonyflake {
-    /// Create a new Sonyflake configured with the given Settings.
-    /// Returns an error in the following cases:
-    /// - Settings.start_time is ahead of the current time.
-    /// - Settings.machine_id returns an error.
-    /// - Settings.check_machine_id returns false.
-    pub fn new(settings: Settings) -> Result<Self, Error> {
-        let sequence = 1 << BIT_LEN_SEQUENCE - 1;
-
-        let start_time = if let Some(start_time) = settings.start_time {
-            if start_time > Utc::now() {
-                return Err(Error::StartTimeAheadOfCurrentTime(start_time));
-            }
-
-            to_sonyflake_time(start_time)
-        } else {
-            to_sonyflake_time(Utc.ymd(2014, 9, 1).and_hms(0, 0, 0))
-        };
-
-        let machine_id = if let Some(machine_id) = settings.machine_id {
-            match machine_id() {
-                Ok(machine_id) => machine_id,
-                Err(e) => return Err(Error::MachineIdFailed(e)),
-            }
-        } else {
-            lower_16_bit_private_ip()?
-        };
-
-        if let Some(check_machine_id) = settings.check_machine_id {
-            if !check_machine_id(machine_id) {
-                return Err(Error::CheckMachineIdFailed);
-            }
-        }
-
-        Ok(Self {
-            sequence,
-            start_time,
-            machine_id,
-            elapsed_time: 0,
-        })
-    }
-
     /// Generate the next unique id.
     /// After the Sonyflake time overflows, next_id returns an error.
     pub fn next_id(&mut self) -> Result<u64, Error> {
@@ -137,8 +155,7 @@ impl Sonyflake {
     }
 }
 
-/// nanoseconds, i.e. 10msec
-const SONYFLAKE_TIME_UNIT: i64 = 10_000_000;
+const SONYFLAKE_TIME_UNIT: i64 = 10_000_000; // nanoseconds, i.e. 10msec
 
 fn to_sonyflake_time(time: DateTime<Utc>) -> i64 {
     time.timestamp_nanos() / SONYFLAKE_TIME_UNIT
@@ -212,7 +229,9 @@ mod tests {
 
     #[test]
     fn next_id() {
-        let mut sf = Sonyflake::new(Settings::empty()).expect("Could not construct Sonyflake");
+        let mut sf = SonyflakeBuilder::new()
+            .finalize()
+            .expect("Could not construct Sonyflake");
         assert!(sf.next_id().is_ok());
     }
 }
