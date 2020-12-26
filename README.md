@@ -25,5 +25,5 @@ These are the advantages and disadvantages of Sonyflake vs. Snowflake:
 Add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
-sonyflake-rs = "0.1.0"
+sonyflake = "0.1.0"
 ```
