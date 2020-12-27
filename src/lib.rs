@@ -11,7 +11,9 @@
 //! Use the library like this:
 //!
 //! ```
-//! let mut sf = sonyflake::Builder::new()
+//! use sonyflake::Sonyflake;
+//!
+//! let mut sf = Sonyflake::builder()
 //!     .finalize()
 //!     .expect("Could not construct Sonyflake");
 //! let next_id = sf.next_id().expect("Could not get next id");
