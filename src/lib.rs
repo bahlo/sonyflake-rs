@@ -52,7 +52,7 @@ pub enum Error {
 
 /// A builder to build a [`Sonyflake`] generator.
 ///
-/// [`Sonyflake`]: ../sonyflake/struct.Sonyflake.html
+/// [`Sonyflake`]: struct.Sonyflake.html
 pub struct Builder<'a> {
     start_time: Option<DateTime<Utc>>,
     machine_id: Option<&'a dyn Fn() -> Result<u16, Box<dyn std::error::Error>>>,
@@ -68,7 +68,7 @@ impl<'a> Default for Builder<'a> {
 impl<'a> Builder<'a> {
     /// Construct a new builder to call methods on for the [`Sonyflake`] construction.
     ///
-    /// [`Sonyflake`]: #struct.Sonyflake.html
+    /// [`Sonyflake`]: struct.Sonyflake.html
     pub fn new() -> Self {
         Self {
             start_time: None,
@@ -148,7 +148,9 @@ pub struct Sonyflake {
 }
 
 impl Sonyflake {
-    /// Create a new builder to construct a Sonyflake.
+    /// Create a new [`Builder`] to construct a Sonyflake.
+    ///
+    /// [`Builder`]: struct.Builder.html
     pub fn builder<'a>() -> Builder<'a> {
         Builder::new()
     }
