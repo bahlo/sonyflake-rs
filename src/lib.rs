@@ -212,8 +212,8 @@ fn sleep_time(overtime: i64) -> Duration {
 pub fn decompose(id: u64) -> HashMap<String, u64> {
     let mut map = HashMap::new();
 
-    let mask_sequence = (1 << (BIT_LEN_SEQUENCE - 1)) << BIT_LEN_MACHINE_ID;
-    let mask_machine_id = 1 << (BIT_LEN_MACHINE_ID - 1);
+    let mask_sequence = (1 << BIT_LEN_SEQUENCE - 1) << BIT_LEN_MACHINE_ID;
+    let mask_machine_id = (1 << BIT_LEN_MACHINE_ID) - 1;
 
     map.insert("id".into(), id);
     map.insert("msb".into(), id >> 63);
@@ -264,6 +264,7 @@ fn lower_16_bit_private_ip() -> Result<u16, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::thread;
 
     #[test]
     fn next_id() {
@@ -271,5 +272,31 @@ mod tests {
             .finalize()
             .expect("Could not construct Sonyflake");
         assert!(sf.next_id().is_ok());
+    }
+
+    #[test]
+    fn sonyflake_once() -> Result<(), Box<dyn std::error::Error>> {
+        let now = Utc::now();
+        let mut sf = Sonyflake::builder().start_time(now).finalize()?;
+
+        let sleep_time = 50;
+        thread::sleep(Duration::from_millis(10 * sleep_time));
+
+        let id = sf.next_id()?;
+        let parts = decompose(id);
+
+        let actual_msb = *parts.get("msb").expect("No msb part");
+        assert_eq!(0, actual_msb, "Unexpected msb");
+
+        let actual_time = *parts.get("time").expect("No time part");
+        if actual_time < sleep_time || actual_time > sleep_time + 1 {
+            panic!("Unexpected time {}", actual_time)
+        }
+
+        let machine_id = lower_16_bit_private_ip()? as u64;
+        let actual_machine_id = *parts.get("machine-id").expect("No machine id part");
+        assert_eq!(machine_id, actual_machine_id, "Unexpected machine id");
+
+        Ok(())
     }
 }

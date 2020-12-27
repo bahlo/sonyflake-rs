@@ -18,7 +18,7 @@ These are the advantages and disadvantages of Sonyflake vs. Snowflake:
 
 * The lifetime (174 years) is longer than that of Snowflake (69 years)
 * It can work in more distributed machines (2^16) than Snowflake (2^10)
-* It can generate 2^8 IDs per 10 msec at most in a single machine/thread (slower than Snowflake)
+* The Go version can generate 2^8 IDs per 10 msec at most in a single machine/thread (slower than Snowflake)
 
 ## Install
 
