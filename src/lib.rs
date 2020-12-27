@@ -38,6 +38,7 @@ pub(crate) const BIT_LEN_SEQUENCE: u64 = 8;
 /// bit length of machine id
 pub(crate) const BIT_LEN_MACHINE_ID: u64 = 63 - BIT_LEN_TIME - BIT_LEN_SEQUENCE;
 
+/// The error type for this crate.
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("start_time `{0}` is ahead of current time")]
