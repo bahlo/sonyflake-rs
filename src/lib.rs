@@ -148,6 +148,11 @@ pub struct Sonyflake {
 }
 
 impl Sonyflake {
+    /// Create a new builder to construct a Sonyflake.
+    pub fn builder<'a>() -> Builder<'a> {
+        Builder::new()
+    }
+
     /// Generate the next unique id.
     /// After the Sonyflake time overflows, next_id returns an error.
     pub fn next_id(&mut self) -> Result<u64, Error> {
@@ -253,11 +258,11 @@ fn lower_16_bit_private_ip() -> Result<u16, Error> {
 
 #[cfg(test)]
 mod tests {
-    use super::Builder;
+    use super::*;
 
     #[test]
     fn next_id() {
-        let mut sf = Builder::new()
+        let mut sf = Sonyflake::builder()
             .finalize()
             .expect("Could not construct Sonyflake");
         assert!(sf.next_id().is_ok());
