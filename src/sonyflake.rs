@@ -70,15 +70,6 @@ impl Sonyflake {
             }
         }
 
-        // We need to unlock here to prevent deadlocks
-        drop(internals);
-
-        self.to_id()
-    }
-
-    fn to_id(&self) -> Result<u64, Error> {
-        let internals = self.0.internals.lock().map_err(|_| Error::MutexPoisoned)?;
-
         if internals.elapsed_time >= 1 << BIT_LEN_TIME {
             return Err(Error::OverTimeLimit);
         }
