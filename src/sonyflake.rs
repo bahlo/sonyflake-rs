@@ -19,6 +19,11 @@ pub struct Sonyflake {
 }
 
 impl Sonyflake {
+    /// Create a new Sonyflake.
+    pub fn new<'a>() -> Result<Sonyflake, Error> {
+        Builder::new().finalize()
+    }
+
     /// Create a new [`Builder`] to construct a Sonyflake.
     ///
     /// [`Builder`]: struct.Builder.html
