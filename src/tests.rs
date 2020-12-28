@@ -49,7 +49,7 @@ fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
 
     let initial = to_sonyflake_time(Utc::now());
     let mut current = initial.clone();
-    while current - initial < 100 {
+    while current - initial < 1000 {
         let id = sf.next_id()?;
         let parts = decompose(id);
 
@@ -105,5 +105,19 @@ fn threads() -> Result<(), Box<dyn std::error::Error>> {
         handle.join().expect("Could not join handle");
     }
 
+    Ok(())
+}
+
+#[test]
+fn generate_10_ids() -> Result<(), Box<dyn std::error::Error>> {
+    let mut sf = Sonyflake::builder().machine_id(&|| Ok(42)).finalize()?;
+    let mut ids = vec![];
+    for _ in 0..10 {
+        let id = sf.next_id()?;
+        if ids.iter().find(|vec_id| **vec_id == id).is_some() {
+            panic!("duplicated id: {}", id)
+        }
+        ids.push(id);
+    }
     Ok(())
 }
