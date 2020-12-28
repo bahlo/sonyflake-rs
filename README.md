@@ -13,3 +13,13 @@ Add the following to your `Cargo.toml`:
 [dependencies]
 sonyflake = "0.1.0"
 ```
+
+## Quickstart
+
+```rust
+use sonyflake::Sonyflake;
+
+let mut sf = Sonyflake::new().unwrap();
+let next_id = sf.next_id().unwrap();
+println!("{}", next_id);
+```
