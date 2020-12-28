@@ -13,9 +13,31 @@
 //! ```
 //! use sonyflake::Sonyflake;
 //!
-//! let mut sf = Sonyflake::new().expect("Could not construct Sonyflake");
-//! let next_id = sf.next_id().expect("Could not get next id");
+//! let mut sf = Sonyflake::new().unwrap();
+//! let next_id = sf.next_id().unwrap();
 //! println!("{}", next_id);
+//! ```
+//!
+//! ## Concurrent use
+//!
+//! Sonyflake is threadsafe. `clone` it before moving to another thread:
+//! ```
+//! use sonyflake::Sonyflake;
+//! use std::thread;
+//!
+//! let sf = Sonyflake::new().unwrap();
+//!
+//! let mut handles = vec![];
+//! for _ in 0..10 {
+//!     let mut sfc = sf.clone();
+//!     handles.push(thread::spawn(move || {
+//!         let _next_id = sfc.next_id().unwrap();
+//!     }));
+//! }
+//!
+//! for handle in handles {
+//!     handle.join().unwrap();
+//! }
 //! ```
 //!
 //! [Sonyflake]: https://github.com/sony/sonyflake
