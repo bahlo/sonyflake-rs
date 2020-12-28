@@ -1,5 +1,5 @@
 use crate::builder::lower_16_bit_private_ip;
-use crate::sonyflake::{decompose, Sonyflake};
+use crate::sonyflake::{decompose, to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE};
 use chrono::prelude::*;
 use std::{thread, time::Duration};
 
@@ -32,6 +32,61 @@ fn once() -> Result<(), Box<dyn std::error::Error>> {
     let machine_id = lower_16_bit_private_ip()? as u64;
     let actual_machine_id = *parts.get("machine-id").expect("No machine id part");
     assert_eq!(machine_id, actual_machine_id, "Unexpected machine id");
+
+    Ok(())
+}
+
+#[test]
+fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
+    let now = Utc::now();
+    let start_time = to_sonyflake_time(now);
+    let mut sf = Sonyflake::builder().start_time(now).finalize()?;
+
+    let mut num_id: i32 = 0;
+    let mut last_id: u64 = 0;
+    let mut max_sequence: u64 = 0;
+
+    let machine_id = lower_16_bit_private_ip()? as u64;
+
+    let initial = to_sonyflake_time(Utc::now());
+    let mut current = initial.clone();
+    while current - initial < 100 {
+        let id = sf.next_id()?;
+        let parts = decompose(id);
+        num_id += 1;
+
+        if id <= last_id {
+            panic!("duplicated id");
+        }
+        last_id = id;
+
+        current = to_sonyflake_time(Utc::now());
+
+        let actual_msb = *parts.get("msb").unwrap();
+        if actual_msb != 0 {
+            panic!("unexpected msb: {}", actual_msb);
+        }
+
+        let actual_time = *parts.get("time").unwrap() as i64;
+        let overtime = start_time + actual_time - current;
+        if overtime > 0 {
+            panic!("unexpected overtime: {}", overtime)
+        }
+
+        let actual_sequence = *parts.get("sequence").unwrap();
+        if max_sequence < actual_sequence {
+            max_sequence = actual_sequence;
+        }
+
+        let actual_machine_id = *parts.get("machine-id").unwrap();
+        if actual_machine_id != machine_id {
+            panic!("unexpected machine id: {}", actual_machine_id)
+        }
+    }
+
+    if max_sequence != 1 << (BIT_LEN_SEQUENCE - 1) {
+        panic!("unexpected max sequence: {}", max_sequence);
+    }
 
     Ok(())
 }
