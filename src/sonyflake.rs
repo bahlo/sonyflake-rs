@@ -30,7 +30,10 @@ pub(crate) struct SharedSonyflake {
 pub struct Sonyflake(Arc<SharedSonyflake>);
 
 impl Sonyflake {
-    /// Create a new Sonyflake.
+    /// Create a new Sonyflake with the default configuration.
+    /// For custom configuration see [`builder`].
+    ///
+    /// [`builder`]: struct.Sonyflake.html#method.builder
     pub fn new<'a>() -> Result<Sonyflake, Error> {
         Builder::new().finalize()
     }
