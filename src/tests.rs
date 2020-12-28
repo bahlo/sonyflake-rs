@@ -4,15 +4,14 @@ use chrono::prelude::*;
 use std::{thread, time::Duration};
 
 #[test]
-fn next_id() {
-    let mut sf = Sonyflake::builder()
-        .finalize()
-        .expect("Could not construct Sonyflake");
+fn next_id() -> Result<(), Box<dyn std::error::Error>> {
+    let mut sf = Sonyflake::new()?;
     assert!(sf.next_id().is_ok());
+    Ok(())
 }
 
 #[test]
-fn sonyflake_once() -> Result<(), Box<dyn std::error::Error>> {
+fn once() -> Result<(), Box<dyn std::error::Error>> {
     let now = Utc::now();
     let mut sf = Sonyflake::builder().start_time(now).finalize()?;
 
@@ -33,6 +32,25 @@ fn sonyflake_once() -> Result<(), Box<dyn std::error::Error>> {
     let machine_id = lower_16_bit_private_ip()? as u64;
     let actual_machine_id = *parts.get("machine-id").expect("No machine id part");
     assert_eq!(machine_id, actual_machine_id, "Unexpected machine id");
+
+    Ok(())
+}
+
+#[test]
+fn threads() -> Result<(), Box<dyn std::error::Error>> {
+    let sf = Sonyflake::new()?;
+
+    let mut handles = vec![];
+    for _ in 0..100 {
+        let mut sfc = sf.clone();
+        handles.push(thread::spawn(move || {
+            sfc.next_id().unwrap();
+        }));
+    }
+
+    for handle in handles {
+        handle.join().expect("Could not join handle");
+    }
 
     Ok(())
 }

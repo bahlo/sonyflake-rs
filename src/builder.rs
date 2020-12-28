@@ -1,8 +1,13 @@
 use crate::error::Error;
-use crate::sonyflake::{to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE};
+use crate::sonyflake::{
+    to_sonyflake_time, Internals, SharedSonyflake, Sonyflake, BIT_LEN_SEQUENCE,
+};
 use chrono::prelude::*;
 use pnet::datalink;
-use std::net::{IpAddr, Ipv4Addr};
+use std::{
+    net::{IpAddr, Ipv4Addr},
+    sync::{Arc, Mutex},
+};
 
 /// A builder to build a [`Sonyflake`] generator.
 ///
@@ -84,12 +89,15 @@ impl<'a> Builder<'a> {
             }
         }
 
-        Ok(Sonyflake {
-            sequence,
+        let shared = Arc::new(SharedSonyflake {
+            internals: Mutex::new(Internals {
+                sequence,
+                elapsed_time: 0,
+            }),
             start_time,
             machine_id,
-            elapsed_time: 0,
-        })
+        });
+        Ok(Sonyflake::new_inner(shared))
     }
 }
 

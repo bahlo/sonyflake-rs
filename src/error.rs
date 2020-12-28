@@ -14,4 +14,6 @@ pub enum Error {
     OverTimeLimit,
     #[error("could not find any private ipv4 address")]
     NoPrivateIPv4,
+    #[error("mutex is poisoned (i.e. a panic happened while it was locked)")]
+    MutexPoisoned,
 }

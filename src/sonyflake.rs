@@ -1,7 +1,12 @@
 use crate::builder::Builder;
 use crate::error::*;
 use chrono::prelude::*;
-use std::{collections::HashMap, thread, time::Duration};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+    thread,
+    time::Duration,
+};
 
 /// bit length of time
 pub(crate) const BIT_LEN_TIME: u64 = 39;
@@ -10,13 +15,19 @@ pub(crate) const BIT_LEN_SEQUENCE: u64 = 8;
 /// bit length of machine id
 pub(crate) const BIT_LEN_MACHINE_ID: u64 = 63 - BIT_LEN_TIME - BIT_LEN_SEQUENCE;
 
-/// Sonyflake is a distributed unique ID generator.
-pub struct Sonyflake {
-    pub(crate) start_time: i64,
+pub(crate) struct Internals {
     pub(crate) elapsed_time: i64,
     pub(crate) sequence: u16,
-    pub(crate) machine_id: u16,
 }
+
+pub(crate) struct SharedSonyflake {
+    pub(crate) start_time: i64,
+    pub(crate) machine_id: u16,
+    pub(crate) internals: Mutex<Internals>,
+}
+
+/// Sonyflake is a distributed unique ID generator.
+pub struct Sonyflake(Arc<SharedSonyflake>);
 
 impl Sonyflake {
     /// Create a new Sonyflake.
@@ -31,38 +42,56 @@ impl Sonyflake {
         Builder::new()
     }
 
+    pub(crate) fn new_inner(shared: Arc<SharedSonyflake>) -> Sonyflake {
+        Sonyflake(shared)
+    }
+
     /// Generate the next unique id.
     /// After the Sonyflake time overflows, next_id returns an error.
     pub fn next_id(&mut self) -> Result<u64, Error> {
         let mask_sequence = 1 << (BIT_LEN_SEQUENCE - 1);
 
-        let current = current_elapsed_time(self.start_time);
-        if self.elapsed_time < current {
-            self.elapsed_time = current;
-            self.sequence = 0;
+        let mut internals = self.0.internals.lock().map_err(|_| Error::MutexPoisoned)?;
+
+        let current = current_elapsed_time(self.0.start_time);
+        if internals.elapsed_time < current {
+            internals.elapsed_time = current;
+            internals.sequence = 0;
         } else {
             // self.elapsed_time >= current
-            self.sequence = (self.sequence + 1) & mask_sequence;
-            if self.sequence == 0 {
-                self.elapsed_time += 1;
-                let overtime = self.elapsed_time - current;
+            internals.sequence = (internals.sequence + 1) & mask_sequence;
+            if internals.sequence == 0 {
+                internals.elapsed_time += 1;
+                let overtime = internals.elapsed_time - current;
                 thread::sleep(sleep_time(overtime));
             }
         }
+
+        // We need to unlock here to prevent deadlocks
+        drop(internals);
 
         self.to_id()
     }
 
     fn to_id(&self) -> Result<u64, Error> {
-        if self.elapsed_time >= 1 << BIT_LEN_TIME {
+        let internals = self.0.internals.lock().map_err(|_| Error::MutexPoisoned)?;
+
+        if internals.elapsed_time >= 1 << BIT_LEN_TIME {
             return Err(Error::OverTimeLimit);
         }
 
         Ok(
-            (self.elapsed_time as u64) << (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID)
-                | (self.sequence as u64) << BIT_LEN_MACHINE_ID
-                | (self.machine_id as u64),
+            (internals.elapsed_time as u64) << (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID)
+                | (internals.sequence as u64) << BIT_LEN_MACHINE_ID
+                | (self.0.machine_id as u64),
         )
+    }
+}
+
+/// Returns a new `Sonyflake` referencing the same state as `self`.
+impl Clone for Sonyflake {
+    fn clone(&self) -> Sonyflake {
+        Sonyflake(self.0.clone())
     }
 }
 
