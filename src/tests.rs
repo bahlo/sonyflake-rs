@@ -54,7 +54,7 @@ fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
         let parts = decompose(id);
 
         if id <= last_id {
-            panic!("duplicated id");
+            panic!("duplicated id ({}, last_id: {})", id, last_id);
         }
         last_id = id;
 
