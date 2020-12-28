@@ -42,7 +42,6 @@ fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
     let start_time = to_sonyflake_time(now);
     let mut sf = Sonyflake::builder().start_time(now).finalize()?;
 
-    let mut num_id: i32 = 0;
     let mut last_id: u64 = 0;
     let mut max_sequence: u64 = 0;
 
@@ -53,7 +52,6 @@ fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
     while current - initial < 100 {
         let id = sf.next_id()?;
         let parts = decompose(id);
-        num_id += 1;
 
         if id <= last_id {
             panic!("duplicated id");
