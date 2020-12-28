@@ -54,7 +54,7 @@ fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
         let parts = decompose(id);
 
         if id <= last_id {
-            panic!("duplicated id ({}, last_id: {})", id, last_id);
+            panic!("duplicated id (id: {}, last_id: {})", id, last_id);
         }
         last_id = id;
 
@@ -72,6 +72,7 @@ fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         let actual_sequence = *parts.get("sequence").unwrap();
+        dbg!(actual_sequence);
         if max_sequence < actual_sequence {
             max_sequence = actual_sequence;
         }
@@ -82,9 +83,11 @@ fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    if max_sequence != 1 << (BIT_LEN_SEQUENCE - 1) {
-        panic!("unexpected max sequence: {}", max_sequence);
-    }
+    assert_eq!(
+        max_sequence,
+        (1 << BIT_LEN_SEQUENCE) - 1,
+        "unexpected max sequence"
+    );
 
     Ok(())
 }

@@ -15,6 +15,7 @@ pub(crate) const BIT_LEN_SEQUENCE: u64 = 8;
 /// bit length of machine id
 pub(crate) const BIT_LEN_MACHINE_ID: u64 = 63 - BIT_LEN_TIME - BIT_LEN_SEQUENCE;
 
+#[derive(Debug)]
 pub(crate) struct Internals {
     pub(crate) elapsed_time: i64,
     pub(crate) sequence: u16,
@@ -52,7 +53,7 @@ impl Sonyflake {
     /// Generate the next unique id.
     /// After the Sonyflake time overflows, next_id returns an error.
     pub fn next_id(&mut self) -> Result<u64, Error> {
-        let mask_sequence = 1 << (BIT_LEN_SEQUENCE - 1);
+        let mask_sequence = (1 << BIT_LEN_SEQUENCE) - 1;
 
         let mut internals = self.0.internals.lock().map_err(|_| Error::MutexPoisoned)?;
 
@@ -108,13 +109,16 @@ fn sleep_time(overtime: i64) -> Duration {
 pub fn decompose(id: u64) -> HashMap<String, u64> {
     let mut map = HashMap::new();
 
-    let mask_sequence = 1 << (BIT_LEN_SEQUENCE - 1) << BIT_LEN_MACHINE_ID;
+    let mask_sequence = (1 << BIT_LEN_SEQUENCE) - 1 << BIT_LEN_MACHINE_ID;
     let mask_machine_id = (1 << BIT_LEN_MACHINE_ID) - 1;
 
     map.insert("id".into(), id);
     map.insert("msb".into(), id >> 63);
     map.insert("time".into(), id >> (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID));
-    map.insert("sequence".into(), id & mask_sequence >> BIT_LEN_MACHINE_ID);
+    map.insert(
+        "sequence".into(),
+        (id & mask_sequence) >> BIT_LEN_MACHINE_ID,
+    );
     map.insert("machine-id".into(), id & mask_machine_id);
 
     map

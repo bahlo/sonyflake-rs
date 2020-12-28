@@ -104,8 +104,8 @@ impl<'a> Builder<'a> {
 fn private_ipv4() -> Option<Ipv4Addr> {
     datalink::interfaces()
         .iter()
-        .find(|interface| interface.is_up() && !interface.is_loopback())
-        .and_then(|interface| {
+        .filter(|interface| interface.is_up() && !interface.is_loopback())
+        .map(|interface| {
             interface
                 .ips
                 .iter()
@@ -119,6 +119,8 @@ fn private_ipv4() -> Option<Ipv4Addr> {
                     _ => None,
                 })
         })
+        .find(|ip| ip.is_some())
+        .flatten()
 }
 
 fn is_private_ipv4(ip: Ipv4Addr) -> bool {
