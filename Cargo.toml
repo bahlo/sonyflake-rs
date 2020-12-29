@@ -1,8 +1,8 @@
 [package]
 name = "sonyflake"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Arne Bahlo <hallo@arne.me>"]
-license = "MIT"
+license = "MIT OR Apache-2.0"
 description = "A distributed unique ID generator inspired by Twitter's Snowflake"
 repository = "https://github.com/bahlo/sonyflake-rs"
 readme = "README.md"
