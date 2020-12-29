@@ -14,7 +14,7 @@ This is a Rust implementation of the original [sony/sonyflake](https://github.co
 Add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
-sonyflake = "0.1.1"
+sonyflake = "0.1"
 ```
 
 ## Quickstart
