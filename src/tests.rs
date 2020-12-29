@@ -1,7 +1,11 @@
-use crate::builder::lower_16_bit_private_ip;
-use crate::sonyflake::{decompose, to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE};
+use crate::{
+    builder::lower_16_bit_private_ip,
+    error::*,
+    sonyflake::{decompose, to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE},
+};
 use chrono::prelude::*;
 use std::{thread, time::Duration};
+use thiserror::Error;
 
 #[test]
 fn next_id() -> Result<(), Box<dyn std::error::Error>> {
@@ -123,4 +127,34 @@ fn generate_10_ids() -> Result<(), Box<dyn std::error::Error>> {
         ids.push(id);
     }
     Ok(())
+}
+
+#[derive(Error, Debug)]
+pub enum TestError {
+    #[error("some error")]
+    SomeError,
+}
+
+#[test]
+fn builder_errors() {
+    use chrono::Duration;
+
+    let start_time = Utc::now() + Duration::seconds(1);
+    match Sonyflake::builder().start_time(start_time).finalize() {
+        Err(Error::StartTimeAheadOfCurrentTime(_)) => {} // ok
+        _ => panic!("Expected error on start time ahead of current time"),
+    };
+
+    match Sonyflake::builder()
+        .machine_id(&|| Err(Box::new(TestError::SomeError)))
+        .finalize()
+    {
+        Err(Error::MachineIdFailed(_)) => {} // ok
+        _ => panic!("Expected error failing machine_id closure"),
+    };
+
+    match Sonyflake::builder().check_machine_id(&|_| false).finalize() {
+        Err(Error::CheckMachineIdFailed) => {}
+        _ => panic!("Expected error on check_machine_id closure returning false"),
+    }
 }
