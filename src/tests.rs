@@ -17,14 +17,14 @@ use std::{
 use thiserror::Error;
 
 #[test]
-fn test_next_id() -> Result<(), Box<dyn std::error::Error>> {
+fn test_next_id() -> Result<(), BoxDynError> {
     let mut sf = Sonyflake::new()?;
     assert!(sf.next_id().is_ok());
     Ok(())
 }
 
 #[test]
-fn test_once() -> Result<(), Box<dyn std::error::Error>> {
+fn test_once() -> Result<(), BoxDynError> {
     let now = Utc::now();
     let mut sf = Sonyflake::builder().start_time(now).finalize()?;
 
@@ -50,7 +50,7 @@ fn test_once() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn test_run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
+fn test_run_for_10s() -> Result<(), BoxDynError> {
     let now = Utc::now();
     let start_time = to_sonyflake_time(now);
     let mut sf = Sonyflake::builder().start_time(now).finalize()?;
@@ -105,7 +105,7 @@ fn test_run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn test_threads() -> Result<(), Box<dyn std::error::Error>> {
+fn test_threads() -> Result<(), BoxDynError> {
     let sf = Sonyflake::new()?;
 
     let (tx, rx): (Sender<u64>, Receiver<u64>) = mpsc::channel();
@@ -136,7 +136,7 @@ fn test_threads() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn test_generate_10_ids() -> Result<(), Box<dyn std::error::Error>> {
+fn test_generate_10_ids() -> Result<(), BoxDynError> {
     let mut sf = Sonyflake::builder().machine_id(&|| Ok(42)).finalize()?;
     let mut ids = vec![];
     for _ in 0..10 {
