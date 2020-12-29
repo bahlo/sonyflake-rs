@@ -4,7 +4,16 @@ use crate::{
     sonyflake::{decompose, to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE},
 };
 use chrono::prelude::*;
-use std::{thread, time::Duration};
+use std::{
+    collections::HashSet,
+    sync::{
+        mpsc,
+        mpsc::{Receiver, Sender},
+    },
+    thread,
+    time::Duration,
+};
+
 use thiserror::Error;
 
 #[test]
@@ -100,16 +109,28 @@ fn test_run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
 fn test_threads() -> Result<(), Box<dyn std::error::Error>> {
     let sf = Sonyflake::new()?;
 
-    let mut handles = vec![];
-    for _ in 0..100 {
-        let mut sfc = sf.clone();
-        handles.push(thread::spawn(move || {
-            sfc.next_id().unwrap();
+    let (tx, rx): (Sender<u64>, Receiver<u64>) = mpsc::channel();
+
+    let mut children = Vec::new();
+    for _ in 0..10 {
+        let mut thread_sf = sf.clone();
+        let thread_tx = tx.clone();
+        children.push(thread::spawn(move || {
+            for _ in 0..1000 {
+                thread_tx.send(thread_sf.next_id().unwrap()).unwrap();
+            }
         }));
     }
 
-    for handle in handles {
-        handle.join().expect("Could not join handle");
+    let mut ids = HashSet::new();
+    for _ in 0..10_000 {
+        let id = rx.recv_timeout(Duration::from_millis(100)).unwrap();
+        assert!(!ids.contains(&id), "duplicate id: {}", id);
+        ids.insert(id);
+    }
+
+    for child in children {
+        child.join().expect("Child thread panicked");
     }
 
     Ok(())
@@ -137,9 +158,7 @@ pub enum TestError {
 
 #[test]
 fn test_builder_errors() {
-    use chrono::Duration;
-
-    let start_time = Utc::now() + Duration::seconds(1);
+    let start_time = Utc::now() + chrono::Duration::seconds(1);
     match Sonyflake::builder().start_time(start_time).finalize() {
         Err(Error::StartTimeAheadOfCurrentTime(_)) => {} // ok
         _ => panic!("Expected error on start time ahead of current time"),
