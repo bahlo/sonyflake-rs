@@ -7,7 +7,7 @@
 //! Add the following to your `Cargo.toml`:
 //! ```toml
 //! [dependencies]
-//! sonyflake = "0.1.0"
+//! sonyflake = "0.1.1"
 //! ```
 //!
 //! Use the library like this:
@@ -44,6 +44,7 @@
 //!
 //! [sony/sonyflake]: https://github.com/sony/sonyflake
 //! [Twitter's Snowflake]: https://blog.twitter.com/2010/announcing-snowflake
+#![doc(html_root_url = "https://docs.rs/sonyflake/*")]
 
 mod builder;
 mod error;
