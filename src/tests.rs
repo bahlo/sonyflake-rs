@@ -176,3 +176,13 @@ fn test_builder_errors() {
         _ => panic!("Expected error on check_machine_id closure returning false"),
     }
 }
+
+#[test]
+fn test_error_send_sync() {
+    let res = Sonyflake::new();
+    thread::spawn(move || {
+        let _ = res.is_ok();
+    })
+    .join()
+    .unwrap();
+}
