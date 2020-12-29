@@ -8,14 +8,14 @@ use std::{thread, time::Duration};
 use thiserror::Error;
 
 #[test]
-fn next_id() -> Result<(), Box<dyn std::error::Error>> {
+fn test_next_id() -> Result<(), Box<dyn std::error::Error>> {
     let mut sf = Sonyflake::new()?;
     assert!(sf.next_id().is_ok());
     Ok(())
 }
 
 #[test]
-fn once() -> Result<(), Box<dyn std::error::Error>> {
+fn test_once() -> Result<(), Box<dyn std::error::Error>> {
     let now = Utc::now();
     let mut sf = Sonyflake::builder().start_time(now).finalize()?;
 
@@ -41,7 +41,7 @@ fn once() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
+fn test_run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
     let now = Utc::now();
     let start_time = to_sonyflake_time(now);
     let mut sf = Sonyflake::builder().start_time(now).finalize()?;
@@ -97,7 +97,7 @@ fn run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn threads() -> Result<(), Box<dyn std::error::Error>> {
+fn test_threads() -> Result<(), Box<dyn std::error::Error>> {
     let sf = Sonyflake::new()?;
 
     let mut handles = vec![];
@@ -116,7 +116,7 @@ fn threads() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn generate_10_ids() -> Result<(), Box<dyn std::error::Error>> {
+fn test_generate_10_ids() -> Result<(), Box<dyn std::error::Error>> {
     let mut sf = Sonyflake::builder().machine_id(&|| Ok(42)).finalize()?;
     let mut ids = vec![];
     for _ in 0..10 {
@@ -136,7 +136,7 @@ pub enum TestError {
 }
 
 #[test]
-fn builder_errors() {
+fn test_builder_errors() {
     use chrono::Duration;
 
     let start_time = Utc::now() + Duration::seconds(1);
