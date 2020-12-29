@@ -7,7 +7,7 @@
 //! Add the following to your `Cargo.toml`:
 //! ```toml
 //! [dependencies]
-//! sonyflake = "0.1.1"
+//! sonyflake = "0.1"
 //! ```
 //!
 //! Use the library like this:
