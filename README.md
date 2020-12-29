@@ -5,9 +5,9 @@
 [![crates.io](https://img.shields.io/crates/v/sonyflake.svg)](https://crates.io/crates/sonyflake)
 [![docs.rs](https://docs.rs/sonyflake/badge.svg)](https://docs.rs/sonyflake/)
 
+A distributed unique ID generator inspired by [Twitter's Snowflake](https://blog.twitter.com/2010/announcing-snowflake).
 
-
-A Rust implementation of [Sonyflake](https://github.com/sony/sonyflake), a distributed unique ID generator inspired by [Twitter's Snowflake](https://blog.twitter.com/2010/announcing-snowflake).
+This is a Rust implementation of the original [sony/sonyflake](https://github.com/sony/sonyflake), which is written in Go.
 
 ## Install
 

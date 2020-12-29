@@ -1,4 +1,6 @@
-//! Sonyflake is a Rust implementation of the [Sonyflake] algorithm.
+//! A distributed unique ID generator inspired by [Twitter's Snowflake].
+//!
+//! This is a Rust implementation of the original [sony/sonyflake], which is written in Go.
 //!
 //! ## Quickstart
 //!
@@ -40,7 +42,8 @@
 //! }
 //! ```
 //!
-//! [Sonyflake]: https://github.com/sony/sonyflake
+//! [sony/sonyflake]: https://github.com/sony/sonyflake
+//! [Twitter's Snowflake]: https://blog.twitter.com/2010/announcing-snowflake
 
 mod builder;
 mod error;
