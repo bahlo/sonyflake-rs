@@ -65,3 +65,26 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+          publish_crates_io:
+  publish_on_crates_io:
+    name: Publish on crates.io
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags') # Only on tags
+    needs:
+      - rust_fmt_check
+      - clippy_check
+      - test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+      - name: Run cargo login
+        uses: actions-rs/cargo@v1
+        with:
+          command: login
+          args: ${{ secrets.CRATES_IO_TOKEN }}
+      - name: Run cargo publish
+        uses: actions-rs/cargo@v1
+        with:
+          command: publish
