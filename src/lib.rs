@@ -27,16 +27,16 @@
 //!
 //! let sf = Sonyflake::new().unwrap();
 //!
-//! let mut handles = vec![];
+//! let mut children = Vec::new();
 //! for _ in 0..10 {
-//!     let mut sfc = sf.clone();
-//!     handles.push(thread::spawn(move || {
-//!         let _next_id = sfc.next_id().unwrap();
+//!     let mut thread_sf = sf.clone();
+//!     children.push(thread::spawn(move || {
+//!         println!("{}", thread_sf.next_id().unwrap());
 //!     }));
 //! }
 //!
-//! for handle in handles {
-//!     handle.join().unwrap();
+//! for child in children {
+//!     child.join().unwrap();
 //! }
 //! ```
 //!

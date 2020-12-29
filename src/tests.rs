@@ -85,7 +85,6 @@ fn test_run_for_10s() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         let actual_sequence = *parts.get("sequence").unwrap();
-        dbg!(actual_sequence);
         if max_sequence < actual_sequence {
             max_sequence = actual_sequence;
         }
