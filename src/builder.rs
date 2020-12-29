@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::error::{BoxDynError, Error};
 use crate::sonyflake::{
     to_sonyflake_time, Internals, SharedSonyflake, Sonyflake, BIT_LEN_SEQUENCE,
 };
@@ -14,7 +14,7 @@ use std::{
 /// [`Sonyflake`]: struct.Sonyflake.html
 pub struct Builder<'a> {
     start_time: Option<DateTime<Utc>>,
-    machine_id: Option<&'a dyn Fn() -> Result<u16, Box<dyn std::error::Error>>>,
+    machine_id: Option<&'a dyn Fn() -> Result<u16, BoxDynError>>,
     check_machine_id: Option<&'a dyn Fn(u16) -> bool>,
 }
 
@@ -45,10 +45,7 @@ impl<'a> Builder<'a> {
 
     /// Sets the machine id.
     /// If the fn returns an error, finalize will fail.
-    pub fn machine_id(
-        mut self,
-        machine_id: &'a dyn Fn() -> Result<u16, Box<dyn std::error::Error>>,
-    ) -> Self {
+    pub fn machine_id(mut self, machine_id: &'a dyn Fn() -> Result<u16, BoxDynError>) -> Self {
         self.machine_id = Some(machine_id);
         self
     }
