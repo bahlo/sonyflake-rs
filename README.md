@@ -4,10 +4,19 @@
 [![Audit](https://github.com/bahlo/sonyflake-rs/workflows/Audit/badge.svg)](https://github.com/bahlo/sonyflake-rs/actions?query=workflow%3AAudit)
 [![crates.io](https://img.shields.io/crates/v/sonyflake.svg)](https://crates.io/crates/sonyflake)
 [![docs.rs](https://docs.rs/sonyflake/badge.svg)](https://docs.rs/sonyflake/)
+[![License](https://img.shields.io/crates/l/sonyflake)](LICENSE-APACHE)
 
 A distributed unique ID generator inspired by [Twitter's Snowflake](https://blog.twitter.com/2010/announcing-snowflake).
 
 This is a Rust implementation of the original [sony/sonyflake](https://github.com/sony/sonyflake), which is written in Go.
+
+A Sonyflake ID is composed of
+
+```
+39 bits for time in units of 10 msec
+ 8 bits for a sequence number
+16 bits for a machine id
+```
 
 ## Install
 
