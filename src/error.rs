@@ -1,8 +1,9 @@
 use chrono::{DateTime, Utc};
+use std::error::Error as StdError;
 use thiserror::Error;
 
 /// Convenience type alias for usage within sonyflake.
-pub(crate) type BoxDynError = Box<dyn std::error::Error + 'static + Send + Sync>;
+pub(crate) type BoxDynError = Box<dyn StdError + 'static + Send + Sync>;
 
 /// The error type for this crate.
 #[derive(Error, Debug)]

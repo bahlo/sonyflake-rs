@@ -35,7 +35,7 @@ impl Sonyflake {
     /// For custom configuration see [`builder`].
     ///
     /// [`builder`]: struct.Sonyflake.html#method.builder
-    pub fn new() -> Result<Sonyflake, Error> {
+    pub fn new() -> Result<Self, Error> {
         Builder::new().finalize()
     }
 
@@ -46,8 +46,8 @@ impl Sonyflake {
         Builder::new()
     }
 
-    pub(crate) fn new_inner(shared: Arc<SharedSonyflake>) -> Sonyflake {
-        Sonyflake(shared)
+    pub(crate) fn new_inner(shared: Arc<SharedSonyflake>) -> Self {
+        Self(shared)
     }
 
     /// Generate the next unique id.
@@ -85,8 +85,8 @@ impl Sonyflake {
 
 /// Returns a new `Sonyflake` referencing the same state as `self`.
 impl Clone for Sonyflake {
-    fn clone(&self) -> Sonyflake {
-        Sonyflake(self.0.clone())
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
     }
 }
 
