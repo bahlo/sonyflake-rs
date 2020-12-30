@@ -4,6 +4,7 @@
 [![Audit](https://github.com/bahlo/sonyflake-rs/workflows/Audit/badge.svg)](https://github.com/bahlo/sonyflake-rs/actions?query=workflow%3AAudit)
 [![crates.io](https://img.shields.io/crates/v/sonyflake.svg)](https://crates.io/crates/sonyflake)
 [![docs.rs](https://docs.rs/sonyflake/badge.svg)](https://docs.rs/sonyflake/)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbahlo%2Fsonyflake-rs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbahlo%2Fsonyflake-rs?ref=badge_shield)
 
 A distributed unique ID generator inspired by [Twitter's Snowflake](https://blog.twitter.com/2010/announcing-snowflake).
 
@@ -35,6 +36,9 @@ Licensed under either of
  * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbahlo%2Fsonyflake-rs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbahlo%2Fsonyflake-rs?ref=badge_large)
 
 ### Contribution
 
