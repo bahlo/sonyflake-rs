@@ -9,6 +9,14 @@ A distributed unique ID generator inspired by [Twitter's Snowflake](https://blog
 
 This is a Rust implementation of the original [sony/sonyflake](https://github.com/sony/sonyflake), which is written in Go.
 
+A Sonyflake ID is composed of
+
+```
+39 bits for time in units of 10 msec
+ 8 bits for a sequence number
+16 bits for a machine id
+```
+
 ## Install
 
 Add the following to your `Cargo.toml`:
