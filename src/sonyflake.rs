@@ -109,7 +109,7 @@ fn sleep_time(overtime: i64) -> Duration {
 pub fn decompose(id: u64) -> HashMap<String, u64> {
     let mut map = HashMap::new();
 
-    let mask_sequence = (1 << BIT_LEN_SEQUENCE) - 1 << BIT_LEN_MACHINE_ID;
+    let mask_sequence = ((1 << BIT_LEN_SEQUENCE) - 1) << BIT_LEN_MACHINE_ID;
     let mask_machine_id = (1 << BIT_LEN_MACHINE_ID) - 1;
 
     map.insert("id".into(), id);

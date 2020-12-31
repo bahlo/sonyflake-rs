@@ -1,7 +1,6 @@
 # sonyflake-rs
 
-[![CI](https://github.com/bahlo/sonyflake-rs/workflows/CI/badge.svg)](https://github.com/bahlo/sonyflake-rs/actions?query=workflow%3ACI)
-[![Audit](https://github.com/bahlo/sonyflake-rs/workflows/Audit/badge.svg)](https://github.com/bahlo/sonyflake-rs/actions?query=workflow%3AAudit)
+[![Build](https://github.com/bahlo/sonyflake-rs/workflows/Build/badge.svg)](https://github.com/bahlo/sonyflake-rs/actions?query=workflow%3ABuild)
 [![crates.io](https://img.shields.io/crates/v/sonyflake.svg)](https://crates.io/crates/sonyflake)
 [![docs.rs](https://docs.rs/sonyflake/badge.svg)](https://docs.rs/sonyflake/)
 [![License](https://img.shields.io/crates/l/sonyflake)](LICENSE-APACHE)
