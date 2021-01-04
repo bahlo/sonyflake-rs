@@ -1,7 +1,7 @@
 use crate::{
     builder::lower_16_bit_private_ip,
     error::*,
-    sonyflake::{decompose, to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE},
+    sonyflake::{decompose, to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE, BIT_LEN_TIME},
 };
 use chrono::prelude::*;
 use std::{
@@ -185,4 +185,14 @@ fn test_error_send_sync() {
     })
     .join()
     .unwrap();
+}
+
+#[test]
+fn test_over_time_limit() -> Result<(), BoxDynError> {
+    let mut sf = Sonyflake::new()?;
+    let mut internals = sf.0.internals.lock().unwrap();
+    internals.elapsed_time = 1 << BIT_LEN_TIME;
+    drop(internals);
+    assert!(sf.next_id().is_err());
+    Ok(())
 }

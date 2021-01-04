@@ -28,7 +28,7 @@ pub(crate) struct SharedSonyflake {
 }
 
 /// Sonyflake is a distributed unique ID generator.
-pub struct Sonyflake(Arc<SharedSonyflake>);
+pub struct Sonyflake(pub(crate) Arc<SharedSonyflake>);
 
 impl Sonyflake {
     /// Create a new Sonyflake with the default configuration.
