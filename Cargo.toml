@@ -14,7 +14,7 @@ edition = "2018"
 [dependencies]
 chrono = "0.4"
 thiserror = "1.0"
-pnet = "0.27"
+pnet = "0.28"
 
 [dev-dependencies]
 bencher = "0.1"
