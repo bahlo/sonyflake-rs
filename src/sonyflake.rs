@@ -2,7 +2,6 @@ use crate::builder::Builder;
 use crate::error::*;
 use chrono::prelude::*;
 use std::{
-    collections::HashMap,
     sync::{Arc, Mutex},
     thread,
     time::Duration,
@@ -14,6 +13,8 @@ pub(crate) const BIT_LEN_TIME: u64 = 39;
 pub(crate) const BIT_LEN_SEQUENCE: u64 = 8;
 /// bit length of machine id
 pub(crate) const BIT_LEN_MACHINE_ID: u64 = 63 - BIT_LEN_TIME - BIT_LEN_SEQUENCE;
+
+const GENERATE_MASK_SEQUENCE: u16 = (1 << BIT_LEN_SEQUENCE) - 1;
 
 #[derive(Debug)]
 pub(crate) struct Internals {
@@ -52,9 +53,7 @@ impl Sonyflake {
 
     /// Generate the next unique id.
     /// After the Sonyflake time overflows, next_id returns an error.
-    pub fn next_id(&mut self) -> Result<u64, Error> {
-        let mask_sequence = (1 << BIT_LEN_SEQUENCE) - 1;
-
+    pub fn next_id(&self) -> Result<u64, Error> {
         let mut internals = self.0.internals.lock().map_err(|_| Error::MutexPoisoned)?;
 
         let current = current_elapsed_time(self.0.start_time);
@@ -63,7 +62,7 @@ impl Sonyflake {
             internals.sequence = 0;
         } else {
             // self.elapsed_time >= current
-            internals.sequence = (internals.sequence + 1) & mask_sequence;
+            internals.sequence = (internals.sequence + 1) & GENERATE_MASK_SEQUENCE;
             if internals.sequence == 0 {
                 internals.elapsed_time += 1;
                 let overtime = internals.elapsed_time - current;
@@ -105,21 +104,32 @@ fn sleep_time(overtime: i64) -> Duration {
         - Duration::from_nanos((Utc::now().timestamp_nanos() % SONYFLAKE_TIME_UNIT) as u64)
 }
 
+pub struct DecomposedSonyflake {
+    pub id: u64,
+    pub msb: u64,
+    pub time: u64,
+    pub sequence: u64,
+    pub machine_id: u64,
+}
+
+impl DecomposedSonyflake {
+    /// Returns the timestamp in nanoseconds without epoch.
+    pub fn nanos_time(&self) -> i64 {
+        (self.time as i64) * SONYFLAKE_TIME_UNIT
+    }
+}
+
+const DECOMPOSE_MASK_SEQUENCE: u64 = ((1 << BIT_LEN_SEQUENCE) - 1) << BIT_LEN_MACHINE_ID;
+
+const MASK_MACHINE_ID: u64 = (1 << BIT_LEN_MACHINE_ID) - 1;
+
 /// Break a Sonyflake ID up into its parts.
-pub fn decompose(id: u64) -> HashMap<String, u64> {
-    let mut map = HashMap::new();
-
-    let mask_sequence = ((1 << BIT_LEN_SEQUENCE) - 1) << BIT_LEN_MACHINE_ID;
-    let mask_machine_id = (1 << BIT_LEN_MACHINE_ID) - 1;
-
-    map.insert("id".into(), id);
-    map.insert("msb".into(), id >> 63);
-    map.insert("time".into(), id >> (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID));
-    map.insert(
-        "sequence".into(),
-        (id & mask_sequence) >> BIT_LEN_MACHINE_ID,
-    );
-    map.insert("machine-id".into(), id & mask_machine_id);
-
-    map
+pub fn decompose(id: u64) -> DecomposedSonyflake {
+    DecomposedSonyflake {
+        id,
+        msb: id >> 63,
+        time: id >> (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID),
+        sequence: (id & DECOMPOSE_MASK_SEQUENCE) >> BIT_LEN_MACHINE_ID,
+        machine_id: id & MASK_MACHINE_ID,
+    }
 }

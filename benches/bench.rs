@@ -6,12 +6,12 @@ fn bench_new(b: &mut Bencher) {
 }
 
 fn bench_next_id(b: &mut Bencher) {
-    let mut sf = Sonyflake::new().expect("Could not create Sonyflake");
+    let sf = Sonyflake::new().expect("Could not create Sonyflake");
     b.iter(|| sf.next_id());
 }
 
 fn bench_decompose(b: &mut Bencher) {
-    let mut sf = Sonyflake::new().expect("Could not create Sonyflake");
+    let sf = Sonyflake::new().expect("Could not create Sonyflake");
     let next_id = sf.next_id().expect("Could not get next id");
 
     b.iter(|| decompose(next_id));
