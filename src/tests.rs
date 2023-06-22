@@ -34,16 +34,16 @@ fn test_once() -> Result<(), BoxDynError> {
     let id = sf.next_id()?;
     let parts = decompose(id);
 
-    let actual_msb = *parts.get("msb").expect("No msb part");
+    let actual_msb = parts.msb;
     assert_eq!(0, actual_msb, "Unexpected msb");
 
-    let actual_time = *parts.get("time").expect("No time part");
+    let actual_time = parts.time;
     if actual_time < sleep_time || actual_time > sleep_time + 1 {
         panic!("Unexpected time {}", actual_time)
     }
 
     let machine_id = lower_16_bit_private_ip()? as u64;
-    let actual_machine_id = *parts.get("machine-id").expect("No machine id part");
+    let actual_machine_id = parts.machine_id;
     assert_eq!(machine_id, actual_machine_id, "Unexpected machine id");
 
     Ok(())
@@ -73,23 +73,23 @@ fn test_run_for_10s() -> Result<(), BoxDynError> {
 
         current = to_sonyflake_time(Utc::now());
 
-        let actual_msb = *parts.get("msb").unwrap();
+        let actual_msb = parts.msb;
         if actual_msb != 0 {
             panic!("unexpected msb: {}", actual_msb);
         }
 
-        let actual_time = *parts.get("time").unwrap() as i64;
+        let actual_time = parts.time as i64;
         let overtime = start_time + actual_time - current;
         if overtime > 0 {
             panic!("unexpected overtime: {}", overtime)
         }
 
-        let actual_sequence = *parts.get("sequence").unwrap();
+        let actual_sequence = parts.sequence;
         if max_sequence < actual_sequence {
             max_sequence = actual_sequence;
         }
 
-        let actual_machine_id = *parts.get("machine-id").unwrap();
+        let actual_machine_id = parts.machine_id;
         if actual_machine_id != machine_id {
             panic!("unexpected machine id: {}", actual_machine_id)
         }

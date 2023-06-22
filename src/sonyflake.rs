@@ -2,7 +2,6 @@ use crate::builder::Builder;
 use crate::error::*;
 use chrono::prelude::*;
 use std::{
-    collections::HashMap,
     sync::{Arc, Mutex},
     thread,
     time::Duration,
@@ -105,21 +104,24 @@ fn sleep_time(overtime: i64) -> Duration {
         - Duration::from_nanos((Utc::now().timestamp_nanos() % SONYFLAKE_TIME_UNIT) as u64)
 }
 
-/// Break a Sonyflake ID up into its parts.
-pub fn decompose(id: u64) -> HashMap<String, u64> {
-    let mut map = HashMap::new();
+pub struct DecomposedSonyflake {
+    pub id: u64,
+    pub msb: u64,
+    pub time: u64,
+    pub sequence: u64,
+    pub machine_id: u64,
+}
 
+/// Break a Sonyflake ID up into its parts.
+pub fn decompose(id: u64) -> DecomposedSonyflake {
     let mask_sequence = ((1 << BIT_LEN_SEQUENCE) - 1) << BIT_LEN_MACHINE_ID;
     let mask_machine_id = (1 << BIT_LEN_MACHINE_ID) - 1;
 
-    map.insert("id".into(), id);
-    map.insert("msb".into(), id >> 63);
-    map.insert("time".into(), id >> (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID));
-    map.insert(
-        "sequence".into(),
-        (id & mask_sequence) >> BIT_LEN_MACHINE_ID,
-    );
-    map.insert("machine-id".into(), id & mask_machine_id);
-
-    map
+    DecomposedSonyflake {
+        id,
+        msb: id >> 63,
+        time: id >> (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID),
+        sequence: (id & mask_sequence) >> BIT_LEN_MACHINE_ID,
+        machine_id: id & mask_machine_id,
+    }
 }
