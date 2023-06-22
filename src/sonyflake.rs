@@ -112,6 +112,13 @@ pub struct DecomposedSonyflake {
     pub machine_id: u64,
 }
 
+impl DecomposedSonyflake {
+    /// Returns the timestamp in nanoseconds without epoch.
+    pub fn nanos_time(&self) -> i64 {
+        (self.time as i64) * SONYFLAKE_TIME_UNIT
+    }
+}
+
 /// Break a Sonyflake ID up into its parts.
 pub fn decompose(id: u64) -> DecomposedSonyflake {
     let mask_sequence = ((1 << BIT_LEN_SEQUENCE) - 1) << BIT_LEN_MACHINE_ID;
