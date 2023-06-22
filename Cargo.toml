@@ -7,7 +7,7 @@ description = "A distributed unique ID generator inspired by Twitter's Snowflake
 repository = "https://github.com/bahlo/sonyflake-rs"
 readme = "README.md"
 keywords = ["sonyflake", "snowflake", "random", "id", "generator"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
