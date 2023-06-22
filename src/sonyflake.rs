@@ -14,6 +14,8 @@ pub(crate) const BIT_LEN_SEQUENCE: u64 = 8;
 /// bit length of machine id
 pub(crate) const BIT_LEN_MACHINE_ID: u64 = 63 - BIT_LEN_TIME - BIT_LEN_SEQUENCE;
 
+const GENERATE_MASK_SEQUENCE: u16 = (1 << BIT_LEN_SEQUENCE) - 1;
+
 #[derive(Debug)]
 pub(crate) struct Internals {
     pub(crate) elapsed_time: i64,
@@ -52,8 +54,6 @@ impl Sonyflake {
     /// Generate the next unique id.
     /// After the Sonyflake time overflows, next_id returns an error.
     pub fn next_id(&mut self) -> Result<u64, Error> {
-        let mask_sequence = (1 << BIT_LEN_SEQUENCE) - 1;
-
         let mut internals = self.0.internals.lock().map_err(|_| Error::MutexPoisoned)?;
 
         let current = current_elapsed_time(self.0.start_time);
@@ -62,7 +62,7 @@ impl Sonyflake {
             internals.sequence = 0;
         } else {
             // self.elapsed_time >= current
-            internals.sequence = (internals.sequence + 1) & mask_sequence;
+            internals.sequence = (internals.sequence + 1) & GENERATE_MASK_SEQUENCE;
             if internals.sequence == 0 {
                 internals.elapsed_time += 1;
                 let overtime = internals.elapsed_time - current;
@@ -119,16 +119,17 @@ impl DecomposedSonyflake {
     }
 }
 
+const DECOMPOSE_MASK_SEQUENCE: u64 = ((1 << BIT_LEN_SEQUENCE) - 1) << BIT_LEN_MACHINE_ID;
+
+const MASK_MACHINE_ID: u64 = (1 << BIT_LEN_MACHINE_ID) - 1;
+
 /// Break a Sonyflake ID up into its parts.
 pub fn decompose(id: u64) -> DecomposedSonyflake {
-    let mask_sequence = ((1 << BIT_LEN_SEQUENCE) - 1) << BIT_LEN_MACHINE_ID;
-    let mask_machine_id = (1 << BIT_LEN_MACHINE_ID) - 1;
-
     DecomposedSonyflake {
         id,
         msb: id >> 63,
         time: id >> (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID),
-        sequence: (id & mask_sequence) >> BIT_LEN_MACHINE_ID,
-        machine_id: id & mask_machine_id,
+        sequence: (id & DECOMPOSE_MASK_SEQUENCE) >> BIT_LEN_MACHINE_ID,
+        machine_id: id & MASK_MACHINE_ID,
     }
 }
