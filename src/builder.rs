@@ -68,7 +68,7 @@ impl<'a> Builder<'a> {
 
             to_sonyflake_time(start_time)
         } else {
-            to_sonyflake_time(Utc.ymd(2014, 9, 1).and_hms(0, 0, 0))
+            to_sonyflake_time(Utc.with_ymd_and_hms(2014, 9, 1, 0, 0, 0).unwrap())
         };
 
         let machine_id = if let Some(machine_id) = self.machine_id {
