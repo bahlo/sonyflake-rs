@@ -1,8 +1,3 @@
-use crate::{
-    builder::lower_16_bit_private_ip,
-    error::*,
-    sonyflake::{decompose, to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE, BIT_LEN_TIME},
-};
 use chrono::prelude::*;
 use std::{
     collections::HashSet,
@@ -13,8 +8,13 @@ use std::{
     thread,
     time::Duration,
 };
-
 use thiserror::Error;
+
+use crate::{
+    builder::lower_16_bit_private_ip,
+    error::*,
+    sonyflake::{decompose, to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE, BIT_LEN_TIME},
+};
 
 #[test]
 fn test_next_id() -> Result<(), BoxDynError> {

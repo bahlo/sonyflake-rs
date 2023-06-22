@@ -1,11 +1,11 @@
-use crate::builder::Builder;
-use crate::error::*;
 use chrono::prelude::*;
 use std::{
     sync::{Arc, Mutex},
     thread,
     time::Duration,
 };
+
+use crate::{builder::Builder, error::*};
 
 /// bit length of time
 pub(crate) const BIT_LEN_TIME: u64 = 39;

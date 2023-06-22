@@ -1,12 +1,13 @@
-use crate::error::{BoxDynError, Error};
-use crate::sonyflake::{
-    to_sonyflake_time, Internals, SharedSonyflake, Sonyflake, BIT_LEN_SEQUENCE,
-};
 use chrono::prelude::*;
 use pnet::datalink;
 use std::{
     net::{IpAddr, Ipv4Addr},
     sync::{Arc, Mutex},
+};
+
+use crate::{
+    error::{BoxDynError, Error},
+    sonyflake::{to_sonyflake_time, Internals, SharedSonyflake, Sonyflake, BIT_LEN_SEQUENCE},
 };
 
 /// A builder to build a [`Sonyflake`] generator.
