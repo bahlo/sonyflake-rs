@@ -53,7 +53,7 @@ impl Sonyflake {
 
     /// Generate the next unique id.
     /// After the Sonyflake time overflows, next_id returns an error.
-    pub fn next_id(&mut self) -> Result<u64, Error> {
+    pub fn next_id(&self) -> Result<u64, Error> {
         let mut internals = self.0.internals.lock().map_err(|_| Error::MutexPoisoned)?;
 
         let current = current_elapsed_time(self.0.start_time);
