@@ -18,7 +18,7 @@ use thiserror::Error;
 
 #[test]
 fn test_next_id() -> Result<(), BoxDynError> {
-    let mut sf = Sonyflake::new()?;
+    let sf = Sonyflake::new()?;
     assert!(sf.next_id().is_ok());
     Ok(())
 }
@@ -26,7 +26,7 @@ fn test_next_id() -> Result<(), BoxDynError> {
 #[test]
 fn test_once() -> Result<(), BoxDynError> {
     let now = Utc::now();
-    let mut sf = Sonyflake::builder().start_time(now).finalize()?;
+    let sf = Sonyflake::builder().start_time(now).finalize()?;
 
     let sleep_time = 50;
     thread::sleep(Duration::from_millis(10 * sleep_time));
@@ -53,7 +53,7 @@ fn test_once() -> Result<(), BoxDynError> {
 fn test_run_for_10s() -> Result<(), BoxDynError> {
     let now = Utc::now();
     let start_time = to_sonyflake_time(now);
-    let mut sf = Sonyflake::builder().start_time(now).finalize()?;
+    let sf = Sonyflake::builder().start_time(now).finalize()?;
 
     let mut last_id: u64 = 0;
     let mut max_sequence: u64 = 0;
@@ -112,7 +112,7 @@ fn test_threads() -> Result<(), BoxDynError> {
 
     let mut children = Vec::new();
     for _ in 0..10 {
-        let mut thread_sf = sf.clone();
+        let thread_sf = sf.clone();
         let thread_tx = tx.clone();
         children.push(thread::spawn(move || {
             for _ in 0..1000 {
@@ -137,7 +137,7 @@ fn test_threads() -> Result<(), BoxDynError> {
 
 #[test]
 fn test_generate_10_ids() -> Result<(), BoxDynError> {
-    let mut sf = Sonyflake::builder().machine_id(&|| Ok(42)).finalize()?;
+    let sf = Sonyflake::builder().machine_id(&|| Ok(42)).finalize()?;
     let mut ids = vec![];
     for _ in 0..10 {
         let id = sf.next_id()?;
@@ -189,7 +189,7 @@ fn test_error_send_sync() {
 
 #[test]
 fn test_over_time_limit() -> Result<(), BoxDynError> {
-    let mut sf = Sonyflake::new()?;
+    let sf = Sonyflake::new()?;
     let mut internals = sf.0.internals.lock().unwrap();
     internals.elapsed_time = 1 << BIT_LEN_TIME;
     drop(internals);
