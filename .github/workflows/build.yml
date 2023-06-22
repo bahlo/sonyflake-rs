@@ -1,7 +1,12 @@
 name: Build
 
-on: 
-  - push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   rust_fmt_check:
