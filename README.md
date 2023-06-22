@@ -11,11 +11,9 @@ This is a Rust implementation of the original [sony/sonyflake](https://github.co
 
 A Sonyflake ID is composed of
 
-```
-39 bits for time in units of 10 msec
- 8 bits for a sequence number
-16 bits for a machine id
-```
+- 39 bits for time in units of 10 msec
+- 8 bits for a sequence number
+- 16 bits for a machine id
 
 ## Install
 
@@ -40,7 +38,7 @@ println!("{}", next_id);
 Benchmarks were run on a MacBook Pro (15-inch, 2017) with a 2,8GHz i7 and 16 GB memory.
 Run them yourself with `cargo bench`.
 
-```
+```benchmark
 test bench_decompose ... bench:       1,066 ns/iter (+/- 132)
 test bench_new       ... bench:     738,129 ns/iter (+/- 318,192)
 test bench_next_id   ... bench:      37,390 ns/iter (+/- 499)

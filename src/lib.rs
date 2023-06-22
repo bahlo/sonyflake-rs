@@ -46,6 +46,10 @@
 //! [Twitter's Snowflake]: https://blog.twitter.com/2010/announcing-snowflake
 #![doc(html_root_url = "https://docs.rs/sonyflake/*")]
 
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+pub struct ReadmeDoctests;
+
 mod builder;
 mod error;
 mod sonyflake;
