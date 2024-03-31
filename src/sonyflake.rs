@@ -92,7 +92,7 @@ impl Clone for Sonyflake {
 const SONYFLAKE_TIME_UNIT: i64 = 10_000_000; // nanoseconds, i.e. 10msec
 
 pub(crate) fn to_sonyflake_time(time: DateTime<Utc>) -> i64 {
-    time.timestamp_nanos() / SONYFLAKE_TIME_UNIT
+    time.timestamp_nanos_opt().unwrap() / SONYFLAKE_TIME_UNIT
 }
 
 fn current_elapsed_time(start_time: i64) -> i64 {
@@ -101,7 +101,9 @@ fn current_elapsed_time(start_time: i64) -> i64 {
 
 fn sleep_time(overtime: i64) -> Duration {
     Duration::from_millis(overtime as u64 * 10)
-        - Duration::from_nanos((Utc::now().timestamp_nanos() % SONYFLAKE_TIME_UNIT) as u64)
+        - Duration::from_nanos(
+            (Utc::now().timestamp_nanos_opt().unwrap() % SONYFLAKE_TIME_UNIT) as u64,
+        )
 }
 
 pub struct DecomposedSonyflake {
