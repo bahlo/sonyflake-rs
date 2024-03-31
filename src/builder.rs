@@ -102,25 +102,15 @@ fn private_ipv4() -> Option<Ipv4Addr> {
     pnet_datalink::interfaces()
         .iter()
         .filter(|interface| interface.is_up() && !interface.is_loopback())
-        .map(|interface| {
-            interface
-                .ips
-                .iter()
-                .map(|ip_addr| ip_addr.ip()) // convert to std
-                .find(|ip_addr| match ip_addr {
-                    IpAddr::V4(ipv4) => is_private_ipv4(*ipv4),
-                    IpAddr::V6(_) => false,
-                })
-                .and_then(|ip_addr| match ip_addr {
-                    IpAddr::V4(ipv4) => Some(ipv4), // make sure the return type is Ipv4Addr
-                    _ => None,
-                })
+        .flat_map(|interface| interface.ips.iter())
+        .filter_map(|network| match network.ip() {
+            IpAddr::V4(ipv4) => Some(ipv4),
+            IpAddr::V6(_) => None,
         })
-        .find(|ip| ip.is_some())
-        .flatten()
+        .find(is_private_ipv4)
 }
 
-fn is_private_ipv4(ip: Ipv4Addr) -> bool {
+fn is_private_ipv4(ip: &Ipv4Addr) -> bool {
     let octets = ip.octets();
     octets[0] == 10
         || octets[0] == 172 && (octets[1] >= 16 && octets[1] < 32)
