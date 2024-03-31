@@ -1,5 +1,4 @@
 use chrono::prelude::*;
-use pnet::datalink;
 use std::{
     net::{IpAddr, Ipv4Addr},
     sync::{Arc, Mutex},
@@ -100,7 +99,7 @@ impl<'a> Builder<'a> {
 }
 
 fn private_ipv4() -> Option<Ipv4Addr> {
-    datalink::interfaces()
+    pnet_datalink::interfaces()
         .iter()
         .filter(|interface| interface.is_up() && !interface.is_loopback())
         .map(|interface| {
