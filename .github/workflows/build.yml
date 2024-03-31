@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - uses: actions/cache@v2
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
@@ -25,21 +25,18 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
       - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
+        run: cargo fmt -- --check
   clippy_check:
     name: Clippy check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v1
-      - uses: actions/cache@v2
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
@@ -47,19 +44,19 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install clippy
-        run: rustup component add clippy
-      - name: Run clippy check
-        uses: actions-rs/clippy-check@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features
+          components: clippy
+      - name: Run clippy check
+        run: cargo clippy --all-features
+
   test:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - uses: actions/cache@v2
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
@@ -67,11 +64,9 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
       - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+        run: cargo test
   publish_on_crates_io:
     name: Publish on crates.io
     runs-on: ubuntu-latest
@@ -82,15 +77,10 @@ jobs:
       - test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
       - name: Run cargo login
-        uses: actions-rs/cargo@v1
-        with:
-          command: login
-          args: ${{ secrets.CRATES_IO_TOKEN }}
+        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
       - name: Run cargo publish
-        uses: actions-rs/cargo@v1
-        with:
-          command: publish
+        run: cargo publish
