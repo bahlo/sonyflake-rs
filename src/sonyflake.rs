@@ -56,7 +56,7 @@ impl Sonyflake {
     pub fn next_id(&self) -> Result<u64, Error> {
         let mut internals = self.0.internals.lock().map_err(|_| Error::MutexPoisoned)?;
 
-        let current = current_elapsed_time(self.0.start_time);
+        let current = current_elapsed_time(self.0.start_time)?;
         if internals.elapsed_time < current {
             internals.elapsed_time = current;
             internals.sequence = 0;
@@ -66,7 +66,7 @@ impl Sonyflake {
             if internals.sequence == 0 {
                 internals.elapsed_time += 1;
                 let overtime = internals.elapsed_time - current;
-                thread::sleep(sleep_time(overtime));
+                thread::sleep(sleep_time(overtime)?);
             }
         }
 
@@ -91,19 +91,25 @@ impl Clone for Sonyflake {
 
 const SONYFLAKE_TIME_UNIT: i64 = 10_000_000; // nanoseconds, i.e. 10msec
 
-pub(crate) fn to_sonyflake_time(time: DateTime<Utc>) -> i64 {
-    time.timestamp_nanos_opt().unwrap() / SONYFLAKE_TIME_UNIT
+pub(crate) fn to_sonyflake_time(time: DateTime<Utc>) -> Result<i64, Error> {
+    Ok(time
+        .timestamp_nanos_opt()
+        .ok_or(Error::FailedToGetCurrentTime)?
+        / SONYFLAKE_TIME_UNIT)
 }
 
-fn current_elapsed_time(start_time: i64) -> i64 {
-    to_sonyflake_time(Utc::now()) - start_time
+fn current_elapsed_time(start_time: i64) -> Result<i64, Error> {
+    Ok(to_sonyflake_time(Utc::now())? - start_time)
 }
 
-fn sleep_time(overtime: i64) -> Duration {
-    Duration::from_millis(overtime as u64 * 10)
+fn sleep_time(overtime: i64) -> Result<Duration, Error> {
+    Ok(Duration::from_millis(overtime as u64 * 10)
         - Duration::from_nanos(
-            (Utc::now().timestamp_nanos_opt().unwrap() % SONYFLAKE_TIME_UNIT) as u64,
-        )
+            (Utc::now()
+                .timestamp_nanos_opt()
+                .ok_or(Error::FailedToGetCurrentTime)?
+                % SONYFLAKE_TIME_UNIT) as u64,
+        ))
 }
 
 pub struct DecomposedSonyflake {
