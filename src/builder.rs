@@ -66,9 +66,9 @@ impl<'a> Builder<'a> {
                 return Err(Error::StartTimeAheadOfCurrentTime(start_time));
             }
 
-            to_sonyflake_time(start_time)
+            to_sonyflake_time(start_time)?
         } else {
-            to_sonyflake_time(Utc.with_ymd_and_hms(2014, 9, 1, 0, 0, 0).unwrap())
+            to_sonyflake_time(Utc.with_ymd_and_hms(2014, 9, 1, 0, 0, 0).unwrap())?
         };
 
         let machine_id = if let Some(machine_id) = self.machine_id {

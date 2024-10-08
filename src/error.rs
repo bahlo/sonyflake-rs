@@ -20,4 +20,6 @@ pub enum Error {
     NoPrivateIPv4,
     #[error("mutex is poisoned (i.e. a panic happened while it was locked)")]
     MutexPoisoned,
+    #[error("failed to get current time")]
+    FailedToGetCurrentTime,
 }

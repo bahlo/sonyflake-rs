@@ -52,7 +52,7 @@ fn test_once() -> Result<(), BoxDynError> {
 #[test]
 fn test_run_for_10s() -> Result<(), BoxDynError> {
     let now = Utc::now();
-    let start_time = to_sonyflake_time(now);
+    let start_time = to_sonyflake_time(now)?;
     let sf = Sonyflake::builder().start_time(now).finalize()?;
 
     let mut last_id: u64 = 0;
@@ -60,7 +60,7 @@ fn test_run_for_10s() -> Result<(), BoxDynError> {
 
     let machine_id = lower_16_bit_private_ip()? as u64;
 
-    let initial = to_sonyflake_time(Utc::now());
+    let initial = to_sonyflake_time(Utc::now())?;
     let mut current = initial.clone();
     while current - initial < 1000 {
         let id = sf.next_id()?;
@@ -71,7 +71,7 @@ fn test_run_for_10s() -> Result<(), BoxDynError> {
         }
         last_id = id;
 
-        current = to_sonyflake_time(Utc::now());
+        current = to_sonyflake_time(Utc::now())?;
 
         let actual_msb = parts.msb;
         if actual_msb != 0 {
