@@ -18,7 +18,7 @@ pub struct Builder<'a> {
     check_machine_id: Option<&'a dyn Fn(u16) -> bool>,
 }
 
-impl<'a> Default for Builder<'a> {
+impl Default for Builder<'_> {
     fn default() -> Self {
         Builder::new()
     }
@@ -28,6 +28,7 @@ impl<'a> Builder<'a> {
     /// Construct a new builder to call methods on for the [`Sonyflake`] construction.
     ///
     /// [`Sonyflake`]: struct.Sonyflake.html
+    #[must_use]
     pub fn new() -> Self {
         Self {
             start_time: None,
@@ -38,6 +39,7 @@ impl<'a> Builder<'a> {
 
     /// Sets the start time.
     /// If the time is ahead of current time, finalize will fail.
+    #[must_use]
     pub fn start_time(mut self, start_time: DateTime<Utc>) -> Self {
         self.start_time = Some(start_time);
         self
@@ -45,6 +47,7 @@ impl<'a> Builder<'a> {
 
     /// Sets the machine id.
     /// If the fn returns an error, finalize will fail.
+    #[must_use]
     pub fn machine_id(mut self, machine_id: &'a dyn Fn() -> Result<u16, BoxDynError>) -> Self {
         self.machine_id = Some(machine_id);
         self
@@ -52,12 +55,20 @@ impl<'a> Builder<'a> {
 
     /// Set a function to check the machine id.
     /// If the fn returns false, finalize will fail.
+    #[must_use]
     pub fn check_machine_id(mut self, check_machine_id: &'a dyn Fn(u16) -> bool) -> Self {
         self.check_machine_id = Some(check_machine_id);
         self
     }
 
     /// Finalize the builder to create a Sonyflake.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if there's a problem with determining
+    /// the current time.
+    /// It will also return an error if the machine id fn failed or if the
+    /// machine id is invalid.
     pub fn finalize(self) -> Result<Sonyflake, Error> {
         let sequence = 1 << (BIT_LEN_SEQUENCE - 1);
 
@@ -107,10 +118,10 @@ fn private_ipv4() -> Option<Ipv4Addr> {
             IpAddr::V4(ipv4) => Some(ipv4),
             IpAddr::V6(_) => None,
         })
-        .find(is_private_ipv4)
+        .find(|ip| is_private_ipv4(*ip))
 }
 
-fn is_private_ipv4(ip: &Ipv4Addr) -> bool {
+fn is_private_ipv4(ip: Ipv4Addr) -> bool {
     let octets = ip.octets();
     octets[0] == 10
         || octets[0] == 172 && (octets[1] >= 16 && octets[1] < 32)
@@ -121,7 +132,7 @@ pub(crate) fn lower_16_bit_private_ip() -> Result<u16, Error> {
     match private_ipv4() {
         Some(ip) => {
             let octets = ip.octets();
-            Ok(((octets[2] as u16) << 8) + (octets[3] as u16))
+            Ok((u16::from(octets[2]) << 8) + u16::from(octets[3]))
         }
         None => Err(Error::NoPrivateIPv4),
     }

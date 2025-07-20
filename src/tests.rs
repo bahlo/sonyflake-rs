@@ -38,11 +38,12 @@ fn test_once() -> Result<(), BoxDynError> {
     assert_eq!(0, actual_msb, "Unexpected msb");
 
     let actual_time = parts.time;
-    if actual_time < sleep_time || actual_time > sleep_time + 1 {
-        panic!("Unexpected time {}", actual_time)
-    }
+    assert!(
+        !(actual_time < sleep_time || actual_time > sleep_time + 1),
+        "Unexpected time {actual_time}",
+    );
 
-    let machine_id = lower_16_bit_private_ip()? as u64;
+    let machine_id = u64::from(lower_16_bit_private_ip()?);
     let actual_machine_id = parts.machine_id;
     assert_eq!(machine_id, actual_machine_id, "Unexpected machine id");
 
@@ -50,6 +51,7 @@ fn test_once() -> Result<(), BoxDynError> {
 }
 
 #[test]
+#[allow(clippy::cast_possible_wrap)]
 fn test_run_for_10s() -> Result<(), BoxDynError> {
     let now = Utc::now();
     let start_time = to_sonyflake_time(now)?;
@@ -58,31 +60,25 @@ fn test_run_for_10s() -> Result<(), BoxDynError> {
     let mut last_id: u64 = 0;
     let mut max_sequence: u64 = 0;
 
-    let machine_id = lower_16_bit_private_ip()? as u64;
+    let machine_id = u64::from(lower_16_bit_private_ip()?);
 
     let initial = to_sonyflake_time(Utc::now())?;
-    let mut current = initial.clone();
+    let mut current = initial;
     while current - initial < 1000 {
         let id = sf.next_id()?;
         let parts = decompose(id);
 
-        if id <= last_id {
-            panic!("duplicated id (id: {}, last_id: {})", id, last_id);
-        }
+        assert!(id > last_id, "duplicated id (id: {id}, last_id: {last_id})",);
         last_id = id;
 
         current = to_sonyflake_time(Utc::now())?;
 
         let actual_msb = parts.msb;
-        if actual_msb != 0 {
-            panic!("unexpected msb: {}", actual_msb);
-        }
+        assert!(actual_msb == 0, "unexpected msb: {actual_msb}");
 
         let actual_time = parts.time as i64;
         let overtime = start_time + actual_time - current;
-        if overtime > 0 {
-            panic!("unexpected overtime: {}", overtime)
-        }
+        assert!(overtime <= 0, "unexpected overtime: {overtime}");
 
         let actual_sequence = parts.sequence;
         if max_sequence < actual_sequence {
@@ -90,9 +86,10 @@ fn test_run_for_10s() -> Result<(), BoxDynError> {
         }
 
         let actual_machine_id = parts.machine_id;
-        if actual_machine_id != machine_id {
-            panic!("unexpected machine id: {}", actual_machine_id)
-        }
+        assert!(
+            actual_machine_id == machine_id,
+            "unexpected machine id: {actual_machine_id}",
+        );
     }
 
     assert_eq!(
@@ -116,15 +113,19 @@ fn test_threads() -> Result<(), BoxDynError> {
         let thread_tx = tx.clone();
         children.push(thread::spawn(move || {
             for _ in 0..1000 {
-                thread_tx.send(thread_sf.next_id().unwrap()).unwrap();
+                thread_tx
+                    .send(thread_sf.next_id().expect("failed to get next id"))
+                    .expect("failed to send");
             }
         }));
     }
 
     let mut ids = HashSet::new();
     for _ in 0..10_000 {
-        let id = rx.recv_timeout(Duration::from_millis(100)).unwrap();
-        assert!(!ids.contains(&id), "duplicate id: {}", id);
+        let id = rx
+            .recv_timeout(Duration::from_millis(100))
+            .expect("failed to receive");
+        assert!(!ids.contains(&id), "duplicate id: {id}");
         ids.insert(id);
     }
 
@@ -141,9 +142,10 @@ fn test_generate_10_ids() -> Result<(), BoxDynError> {
     let mut ids = vec![];
     for _ in 0..10 {
         let id = sf.next_id()?;
-        if ids.iter().find(|vec_id| **vec_id == id).is_some() {
-            panic!("duplicated id: {}", id)
-        }
+        assert!(
+            !ids.iter().any(|vec_id: &u64| *vec_id == id),
+            "duplicated id: {id}",
+        );
         ids.push(id);
     }
     Ok(())
@@ -161,7 +163,7 @@ fn test_builder_errors() {
     match Sonyflake::builder().start_time(start_time).finalize() {
         Err(Error::StartTimeAheadOfCurrentTime(_)) => {} // ok
         _ => panic!("Expected error on start time ahead of current time"),
-    };
+    }
 
     match Sonyflake::builder()
         .machine_id(&|| Err(Box::new(TestError::SomeError)))
@@ -169,7 +171,7 @@ fn test_builder_errors() {
     {
         Err(Error::MachineIdFailed(_)) => {} // ok
         _ => panic!("Expected error failing machine_id closure"),
-    };
+    }
 
     match Sonyflake::builder().check_machine_id(&|_| false).finalize() {
         Err(Error::CheckMachineIdFailed) => {}
@@ -184,13 +186,13 @@ fn test_error_send_sync() {
         let _ = res.is_ok();
     })
     .join()
-    .unwrap();
+    .expect("failed to join thread");
 }
 
 #[test]
 fn test_over_time_limit() -> Result<(), BoxDynError> {
     let sf = Sonyflake::new()?;
-    let mut internals = sf.0.internals.lock().unwrap();
+    let mut internals = sf.0.internals.lock().expect("failed to aquire lock");
     internals.elapsed_time = 1 << BIT_LEN_TIME;
     drop(internals);
     assert!(sf.next_id().is_err());

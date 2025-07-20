@@ -2,7 +2,7 @@ use bencher::{benchmark_group, benchmark_main, Bencher};
 use sonyflake::{decompose, Sonyflake};
 
 fn bench_new(b: &mut Bencher) {
-    b.iter(|| Sonyflake::new());
+    b.iter(Sonyflake::new);
 }
 
 fn bench_next_id(b: &mut Bencher) {
