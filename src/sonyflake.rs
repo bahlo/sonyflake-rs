@@ -22,6 +22,7 @@ pub(crate) struct Internals {
     pub(crate) sequence: u16,
 }
 
+#[derive(Debug)]
 pub(crate) struct SharedSonyflake {
     pub(crate) start_time: i64,
     pub(crate) machine_id: u16,
@@ -29,6 +30,7 @@ pub(crate) struct SharedSonyflake {
 }
 
 /// Sonyflake is a distributed unique ID generator.
+#[derive(Debug, Clone)]
 pub struct Sonyflake(pub(crate) Arc<SharedSonyflake>);
 
 impl Sonyflake {
@@ -90,13 +92,6 @@ impl Sonyflake {
                 | u64::from(internals.sequence) << BIT_LEN_MACHINE_ID
                 | u64::from(self.0.machine_id),
         )
-    }
-}
-
-/// Returns a new `Sonyflake` referencing the same state as `self`.
-impl Clone for Sonyflake {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
     }
 }
 
