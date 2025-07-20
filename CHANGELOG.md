@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make `pnet` a feature (enabled by default). This can be turned off if there's
   platform problems or people want to bring their own function to generate a
   machine id and want to save a dependency.
+- Upgrade crate to Rust Edition 2024
 
 ## [0.3.0] - 2024-10-09
 
