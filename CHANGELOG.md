@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-07-20
+
 ### Changed
 
 - Make `pnet` a feature (enabled by default). This can be turned off if there's
