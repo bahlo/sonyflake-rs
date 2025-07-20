@@ -124,11 +124,17 @@ fn sleep_time(overtime: i64) -> Result<Duration, Error> {
         ))
 }
 
+/// A decomposed Sonyflake.
 pub struct DecomposedSonyflake {
+    /// The ID.
     pub id: u64,
+    /// The MSB.
     pub msb: u64,
+    /// The time.
     pub time: u64,
+    /// The sequence number.
     pub sequence: u64,
+    /// The machine id.
     pub machine_id: u64,
 }
 

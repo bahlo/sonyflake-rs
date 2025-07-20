@@ -46,7 +46,7 @@
 //! [Twitter's Snowflake]: https://blog.twitter.com/2010/announcing-snowflake
 #![deny(warnings)]
 #![deny(clippy::pedantic, clippy::unwrap_used)]
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 #![doc(html_root_url = "https://docs.rs/sonyflake/*")]
 
 #[cfg(doctest)]
