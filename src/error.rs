@@ -29,4 +29,8 @@ pub enum Error {
     /// Failed to get current time.
     #[error("failed to get current time")]
     FailedToGetCurrentTime,
+    /// Returned if the pnet features is deactivated an no custom machine id
+    /// function was provided.
+    #[error("no machine id function provided")]
+    NoMachineIdFn,
 }

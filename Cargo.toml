@@ -14,7 +14,11 @@ edition = "2021"
 [dependencies]
 chrono = { version = "0.4", default-features = false, features = ["now"] }
 thiserror = "1.0"
-pnet_datalink = { version = "0.35", default-features = false }
+pnet_datalink = { version = "0.35", default-features = false, optional = true }
+
+[features]
+default = ["pnet"]
+pnet = ["pnet_datalink"]
 
 [dev-dependencies]
 bencher = "0.1"

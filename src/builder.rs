@@ -1,8 +1,7 @@
 use chrono::prelude::*;
-use std::{
-    net::{IpAddr, Ipv4Addr},
-    sync::{Arc, Mutex},
-};
+#[cfg(feature = "pnet")]
+use std::net::{IpAddr, Ipv4Addr};
+use std::sync::{Arc, Mutex};
 
 use crate::{
     error::{BoxDynError, Error},
@@ -88,7 +87,14 @@ impl<'a> Builder<'a> {
                 Err(e) => return Err(Error::MachineIdFailed(e)),
             }
         } else {
-            lower_16_bit_private_ip()?
+            #[cfg(feature = "pnet")]
+            {
+                lower_16_bit_private_ip()?
+            }
+            #[cfg(not(feature = "pnet"))]
+            {
+                return Err(Error::NoMachineIdFn);
+            }
         };
 
         if let Some(check_machine_id) = self.check_machine_id {
@@ -109,6 +115,7 @@ impl<'a> Builder<'a> {
     }
 }
 
+#[cfg(feature = "pnet")]
 fn private_ipv4() -> Option<Ipv4Addr> {
     pnet_datalink::interfaces()
         .iter()
@@ -121,6 +128,7 @@ fn private_ipv4() -> Option<Ipv4Addr> {
         .find(|ip| is_private_ipv4(*ip))
 }
 
+#[cfg(feature = "pnet")]
 fn is_private_ipv4(ip: Ipv4Addr) -> bool {
     let octets = ip.octets();
     octets[0] == 10
@@ -128,6 +136,7 @@ fn is_private_ipv4(ip: Ipv4Addr) -> bool {
         || octets[0] == 192 && octets[1] == 168
 }
 
+#[cfg(feature = "pnet")]
 pub(crate) fn lower_16_bit_private_ip() -> Result<u16, Error> {
     match private_ipv4() {
         Some(ip) => {
