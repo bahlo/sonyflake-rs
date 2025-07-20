@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     error::{BoxDynError, Error},
-    sonyflake::{to_sonyflake_time, Internals, SharedSonyflake, Sonyflake, BIT_LEN_SEQUENCE},
+    sonyflake::{BIT_LEN_SEQUENCE, Internals, SharedSonyflake, Sonyflake, to_sonyflake_time},
 };
 
 /// A builder to build a [`Sonyflake`] generator.

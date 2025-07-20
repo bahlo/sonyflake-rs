@@ -1,5 +1,5 @@
-use bencher::{benchmark_group, benchmark_main, Bencher};
-use sonyflake::{decompose, Sonyflake};
+use bencher::{Bencher, benchmark_group, benchmark_main};
+use sonyflake::{Sonyflake, decompose};
 
 fn bench_new(b: &mut Bencher) {
     b.iter(Sonyflake::new);

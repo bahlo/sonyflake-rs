@@ -13,7 +13,7 @@ use thiserror::Error;
 use crate::{
     builder::lower_16_bit_private_ip,
     error::*,
-    sonyflake::{decompose, to_sonyflake_time, Sonyflake, BIT_LEN_SEQUENCE, BIT_LEN_TIME},
+    sonyflake::{BIT_LEN_SEQUENCE, BIT_LEN_TIME, Sonyflake, decompose, to_sonyflake_time},
 };
 
 #[test]
