@@ -18,14 +18,14 @@ pub(crate) const BIT_LEN_MACHINE_ID: u64 = 63 - BIT_LEN_TIME - BIT_LEN_SEQUENCE;
 
 const GENERATE_MASK_SEQUENCE: u16 = (1 << BIT_LEN_SEQUENCE) - 1;
 
-/// A generated Sonyflake ID.
+/// A generated Sonyflake id.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Id(u64);
 
 impl Id {
     /// Returns the inner `u64` for this id.
     #[must_use]
-    pub fn as_u64(self) -> u64 {
+    pub fn to_u64(self) -> u64 {
         self.0
     }
 }
@@ -176,7 +176,7 @@ const MASK_MACHINE_ID: u64 = (1 << BIT_LEN_MACHINE_ID) - 1;
 /// Break a Sonyflake ID up into its parts.
 #[must_use]
 pub fn decompose(id: Id) -> DecomposedSonyflake {
-    let id = id.as_u64();
+    let id = id.to_u64();
     DecomposedSonyflake {
         id,
         msb: id >> 63,
