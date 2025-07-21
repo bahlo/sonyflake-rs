@@ -2,15 +2,7 @@
 //!
 //! This is a Rust implementation of the original [sony/sonyflake], which is written in Go.
 //!
-//! ## Quickstart
-//!
-//! Add the following to your `Cargo.toml`:
-//! ```toml
-//! [dependencies]
-//! sonyflake = "0.1"
-//! ```
-//!
-//! Use the library like this:
+//! # Example
 //!
 //! ```
 //! use sonyflake::Sonyflake;
@@ -18,28 +10,6 @@
 //! let mut sf = Sonyflake::new().unwrap();
 //! let next_id = sf.next_id().unwrap();
 //! println!("{}", next_id);
-//! ```
-//!
-//! ## Concurrent use
-//!
-//! Sonyflake is threadsafe. `clone` it before moving to another thread:
-//! ```
-//! use sonyflake::Sonyflake;
-//! use std::thread;
-//!
-//! let sf = Sonyflake::new().unwrap();
-//!
-//! let mut children = Vec::new();
-//! for _ in 0..10 {
-//!     let mut thread_sf = sf.clone();
-//!     children.push(thread::spawn(move || {
-//!         println!("{}", thread_sf.next_id().unwrap());
-//!     }));
-//! }
-//!
-//! for child in children {
-//!     child.join().unwrap();
-//! }
 //! ```
 //!
 //! [sony/sonyflake]: https://github.com/sony/sonyflake
