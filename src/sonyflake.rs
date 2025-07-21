@@ -1,5 +1,7 @@
 use chrono::prelude::*;
 use std::{
+    fmt,
+    ops::Deref,
     sync::{Arc, Mutex},
     thread,
     time::Duration,
@@ -15,6 +17,32 @@ pub(crate) const BIT_LEN_SEQUENCE: u64 = 8;
 pub(crate) const BIT_LEN_MACHINE_ID: u64 = 63 - BIT_LEN_TIME - BIT_LEN_SEQUENCE;
 
 const GENERATE_MASK_SEQUENCE: u16 = (1 << BIT_LEN_SEQUENCE) - 1;
+
+/// A generated Sonyflake ID.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Id(u64);
+
+impl Id {
+    /// Returns the inner `u64` for this id.
+    #[must_use]
+    pub fn as_u64(self) -> u64 {
+        self.0
+    }
+}
+
+impl Deref for Id {
+    type Target = u64;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl fmt::Display for Id {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 #[derive(Debug)]
 pub(crate) struct Internals {
@@ -66,7 +94,7 @@ impl Sonyflake {
     /// This function returns an error if it can't determin the elapsed time.
     /// It also returns an error if it's over the time limit.
     #[allow(clippy::cast_sign_loss)]
-    pub fn next_id(&self) -> Result<u64, Error> {
+    pub fn next_id(&self) -> Result<Id, Error> {
         let mut internals = self.0.internals.lock().map_err(|_| Error::MutexPoisoned)?;
 
         let current = current_elapsed_time(self.0.start_time)?;
@@ -87,11 +115,10 @@ impl Sonyflake {
             return Err(Error::OverTimeLimit);
         }
 
-        Ok(
-            (internals.elapsed_time as u64) << (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID)
-                | u64::from(internals.sequence) << BIT_LEN_MACHINE_ID
-                | u64::from(self.0.machine_id),
-        )
+        Ok(Id((internals.elapsed_time as u64)
+            << (BIT_LEN_SEQUENCE + BIT_LEN_MACHINE_ID)
+            | u64::from(internals.sequence) << BIT_LEN_MACHINE_ID
+            | u64::from(self.0.machine_id)))
     }
 }
 
@@ -148,7 +175,8 @@ const MASK_MACHINE_ID: u64 = (1 << BIT_LEN_MACHINE_ID) - 1;
 
 /// Break a Sonyflake ID up into its parts.
 #[must_use]
-pub fn decompose(id: u64) -> DecomposedSonyflake {
+pub fn decompose(id: Id) -> DecomposedSonyflake {
+    let id = id.as_u64();
     DecomposedSonyflake {
         id,
         msb: id >> 63,

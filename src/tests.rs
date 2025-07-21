@@ -11,6 +11,7 @@ use std::{
 use thiserror::Error;
 
 use crate::{
+    Id,
     builder::lower_16_bit_private_ip,
     error::*,
     sonyflake::{BIT_LEN_SEQUENCE, BIT_LEN_TIME, Sonyflake, decompose, to_sonyflake_time},
@@ -57,7 +58,7 @@ fn test_run_for_10s() -> Result<(), BoxDynError> {
     let start_time = to_sonyflake_time(now)?;
     let sf = Sonyflake::builder().start_time(now).finalize()?;
 
-    let mut last_id: u64 = 0;
+    let mut last_id: Option<Id> = None;
     let mut max_sequence: u64 = 0;
 
     let machine_id = u64::from(lower_16_bit_private_ip()?);
@@ -68,8 +69,10 @@ fn test_run_for_10s() -> Result<(), BoxDynError> {
         let id = sf.next_id()?;
         let parts = decompose(id);
 
-        assert!(id > last_id, "duplicated id (id: {id}, last_id: {last_id})",);
-        last_id = id;
+        if let Some(last_id) = last_id {
+            assert!(id > last_id, "duplicated id (id: {id}, last_id: {last_id})",);
+        }
+        last_id = Some(id);
 
         current = to_sonyflake_time(Utc::now())?;
 
@@ -105,7 +108,7 @@ fn test_run_for_10s() -> Result<(), BoxDynError> {
 fn test_threads() -> Result<(), BoxDynError> {
     let sf = Sonyflake::new()?;
 
-    let (tx, rx): (Sender<u64>, Receiver<u64>) = mpsc::channel();
+    let (tx, rx): (Sender<Id>, Receiver<Id>) = mpsc::channel();
 
     let mut children = Vec::new();
     for _ in 0..10 {
@@ -143,7 +146,7 @@ fn test_generate_10_ids() -> Result<(), BoxDynError> {
     for _ in 0..10 {
         let id = sf.next_id()?;
         assert!(
-            !ids.iter().any(|vec_id: &u64| *vec_id == id),
+            !ids.iter().any(|vec_id: &Id| *vec_id == id),
             "duplicated id: {id}",
         );
         ids.push(id);
