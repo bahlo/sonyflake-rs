@@ -97,10 +97,10 @@ impl<'a> Builder<'a> {
             }
         };
 
-        if let Some(check_machine_id) = self.check_machine_id {
-            if !check_machine_id(machine_id) {
-                return Err(Error::CheckMachineIdFailed);
-            }
+        if let Some(check_machine_id) = self.check_machine_id
+            && !check_machine_id(machine_id)
+        {
+            return Err(Error::CheckMachineIdFailed);
         }
 
         let shared = Arc::new(SharedSonyflake {
