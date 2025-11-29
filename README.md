@@ -1,3 +1,7 @@
+### :warning: This project has moved to [codeberg.org/enra/sonyflake-rs](https://codeberg.org/enra/sonyflake-rs).
+
+----
+
 # sonyflake-rs
 
 [![Build](https://github.com/bahlo/sonyflake-rs/workflows/Build/badge.svg)](https://github.com/bahlo/sonyflake-rs/actions?query=workflow%3ABuild)
